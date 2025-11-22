@@ -449,4 +449,111 @@
             }
         }
 
-        document.getElementById('detail-modal').classList
+        document.getElementById('detail-modal').classList.add('open');
+    }
+
+    function closeModal() {
+        document.getElementById('detail-modal').classList.remove('open');
+        renderActive();
+        renderMap();
+    }
+
+    function enrollCurrent() {
+        state.current.push(activeSub);
+        save();
+        closeModal();
+        alert("¡MISIÓN ACEPTADA!");
+    }
+
+    function forceEnroll() {
+        if(confirm("ADVERTENCIA: Estás forzando una materia sin requisitos. ¿Continuar?")) {
+            enrollCurrent();
+        }
+    }
+    
+    function dropSubject() {
+        if(confirm("¿Abandonar misión? Se perderán los datos de notas.")) {
+            state.current = state.current.filter(c => c !== activeSub);
+            delete state.data[activeSub];
+            save();
+            closeModal();
+        }
+    }
+
+    // --- SISTEMA DE NOTAS ---
+    function renderEvals() {
+        const list = document.getElementById('d-eval-list');
+        list.innerHTML = '';
+        
+        if(!state.data[activeSub]) state.data[activeSub] = {evals:[]};
+        const evals = state.data[activeSub].evals;
+
+        evals.forEach((ev, i) => {
+            list.innerHTML += `
+                <div style="display:flex; gap:5px; margin-bottom:5px;">
+                    <input value="${ev.name}" placeholder="Item" onchange="updEv(${i},'name',this.value)">
+                    <input type="number" value="${ev.grade}" placeholder="Nota" style="width:60px" oninput="updEv(${i},'grade',this.value)">
+                    <input type="number" value="${ev.weight}" placeholder="%" style="width:60px" oninput="updEv(${i},'weight',this.value)">
+                    <button onclick="delEv(${i})" style="background:red; border:none; color:white;">X</button>
+                </div>
+            `;
+        });
+
+        const avg = getAvg(activeSub);
+        const disp = document.getElementById('d-avg');
+        disp.innerText = avg || '--';
+        disp.style.color = avg >= 4.0 ? 'var(--success)' : 'var(--danger)';
+    }
+
+    function addEval() { state.data[activeSub].evals.push({name:'',grade:'',weight:''}); save(); renderEvals(); }
+    function updEv(i, f, v) { state.data[activeSub].evals[i][f] = v; save(); if(f!=='name') renderEvals(); }
+    function delEv(i) { state.data[activeSub].evals.splice(i,1); save(); renderEvals(); }
+
+    function getAvg(code) {
+        const evals = state.data[code]?.evals || [];
+        if(!evals.length) return '';
+        let sum = 0;
+        evals.forEach(e => {
+            const g = parseFloat(e.grade); const w = parseFloat(e.weight);
+            if(!isNaN(g) && !isNaN(w)) sum += g * (w/100);
+        });
+        return sum === 0 ? '' : sum.toFixed(1);
+    }
+
+    // --- UTILS ---
+    function switchView(id, btn) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    function finishSemester() {
+        if(confirm("¿COMPLETAR NIVEL? Las misiones con HP > 4.0 se marcarán como ganadas.")) {
+            const passedNow = [];
+            state.current.forEach(c => {
+                if(parseFloat(getAvg(c)) >= 4.0) passedNow.push(c);
+            });
+            state.passed = [...state.passed, ...passedNow];
+            state.current = [];
+            state.data = {};
+            save();
+            alert(`GANASTE ${passedNow.length} INSIGNIAS NUEVAS.`);
+            renderActive();
+            renderMap();
+        }
+    }
+    
+    function hardReset() {
+        if(confirm("¿GAME OVER? Esto borrará todo tu progreso.")) {
+            localStorage.removeItem('pharmacyQuestSave');
+            location.reload();
+        }
+    }
+
+    // START
+    init();
+
+</script>
+</body>
+</html>
