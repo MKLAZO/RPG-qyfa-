@@ -3,557 +3,460 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Pharmacy Quest 8-Bit</title>
-    
+    <title>Pharmacy RPG Ultimate</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-
     <style>
         :root {
-            --bg: #202028;
-            --panel: #2d2d3a;
-            --accent: #66ccff;
-            --success: #99cc33;
-            --danger: #ff3333;
-            --lock: #555566;
-            --text: #e0e0e0;
-            --gold: #ffcc00;
-            --pixel-border: 4px;
+            --bg: #121214;
+            --panel: #202024;
+            --green: #5de668;
+            --red: #ff4d4d;
+            --blue: #4d94ff;
+            --gold: #ffd700;
+            --purple: #bd93f9;
+            --gray: #6c6c7d;
+            --text: #eee;
+            --pixel: 4px;
         }
 
-        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; outline: none; user-select: none; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: 'VT323', monospace;
-            background-color: var(--bg);
-            color: var(--text);
             margin: 0; padding: 0;
-            padding-bottom: 90px;
-            font-size: 18px;
-        }
-
-        /* --- UI ELEMENTS --- */
-        .pixel-box {
-            background: var(--panel);
-            border: 4px solid var(--bg);
-            box-shadow: 
-                -4px 0 0 0 white,
-                4px 0 0 0 white,
-                0 -4px 0 0 white,
-                0 4px 0 0 white;
-            margin: 15px;
-            padding: 15px;
-            position: relative;
-        }
-        
-        .pixel-btn {
+            background: var(--bg);
+            color: var(--text);
             font-family: 'VT323', monospace;
-            background: var(--accent);
-            color: #000;
-            border: none;
-            border-top: 4px solid white;
-            border-left: 4px solid white;
-            border-right: 4px solid #005580;
-            border-bottom: 4px solid #005580;
-            padding: 10px 20px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            width: 100%;
-            text-transform: uppercase;
+            font-size: 20px;
+            padding-bottom: 90px;
         }
-        .pixel-btn:active { transform: translateY(4px); border:none; }
-        .btn-red { background: var(--danger); border-right-color: #990000; border-bottom-color: #990000; }
-        .btn-green { background: var(--success); border-right-color: #4d6600; border-bottom-color: #4d6600; }
 
-        /* --- HEADER --- */
-        .header {
-            text-align: center;
-            padding: 20px;
-            background: #000;
-            border-bottom: 4px solid white;
+        /* --- UI UTILS --- */
+        .pixel-border {
+            box-shadow: 
+                -4px 0 0 0 rgba(255,255,255,0.2),
+                4px 0 0 0 rgba(255,255,255,0.2),
+                0 -4px 0 0 rgba(255,255,255,0.2),
+                0 4px 0 0 rgba(255,255,255,0.2);
+            margin: 6px;
+            background: var(--panel);
         }
-        .header h1 { margin: 0; font-size: 2.5rem; color: var(--gold); text-shadow: 4px 4px #ff3333; letter-spacing: 2px; }
 
-        /* --- VIEWS --- */
-        .view { display: none; }
-        .view.active { display: block; }
-
-        /* --- MALLA / MAPA --- */
-        .semester-block { margin-bottom: 30px; }
-        .sem-title { 
-            text-align: center; background: #000; color: white; 
-            display: inline-block; padding: 5px 15px; margin-left: 15px;
-            transform: translateY(15px); position: relative; z-index: 2;
+        .btn {
+            background: var(--blue); color: #000; border: none;
+            padding: 12px; font-family: 'VT323'; font-size: 1.3rem;
+            text-transform: uppercase; cursor: pointer; width: 100%;
+            display: block; margin-top: 10px; border: 2px solid white;
         }
+        .btn:active { transform: scale(0.98); }
+        .btn-red { background: var(--red); }
+        .btn-green { background: var(--green); }
+
+        /* --- HUD & XP BAR --- */
+        .hud {
+            background: #000; border-bottom: 4px solid white; padding: 10px 15px;
+            position: sticky; top: 0; z-index: 20;
+        }
+        .hud-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 5px; }
+        .player-rank { color: var(--gold); font-size: 1.2rem; text-shadow: 0 0 5px var(--gold); }
         
-        .course-row {
-            display: flex; align-items: center; gap: 10px;
-            padding: 10px; border-bottom: 2px dashed #444;
-            cursor: pointer;
+        .xp-track {
+            width: 100%; height: 16px; background: #333; border: 2px solid white; position: relative;
         }
-        .course-status { font-size: 1.5rem; width: 30px; text-align: center; }
-        .course-info { flex: 1; }
-        .course-code { font-size: 0.9rem; color: #888; }
-        .course-name { font-size: 1.1rem; line-height: 1.1; }
-
-        /* Estados */
-        .st-locked { color: var(--lock); opacity: 0.6; }
-        .st-available { color: white; animation: blink 2s infinite; }
-        .st-passed { color: var(--success); text-decoration: line-through; opacity: 0.7; }
-        .st-active { color: var(--accent); font-weight: bold; background: rgba(102, 204, 255, 0.1); }
-
-        @keyframes blink { 50% { opacity: 0.5; } }
-
-        /* --- DASHBOARD --- */
-        .hp-bar-container {
-            height: 20px; background: #000; border: 2px solid white; margin-top: 5px; position: relative;
+        .xp-fill {
+            height: 100%; background: linear-gradient(90deg, var(--blue), var(--purple));
+            width: 0%; transition: width 0.5s ease;
         }
-        .hp-bar { height: 100%; background: var(--success); width: 0%; transition: width 0.5s; }
-        .hp-text { position: absolute; width: 100%; text-align: center; top: -2px; font-size: 0.9rem; color: white; text-shadow: 1px 1px #000; }
+        .xp-text {
+            position: absolute; top: -2px; width: 100%; text-align: center;
+            font-size: 0.8rem; color: white; text-shadow: 1px 1px 0 #000;
+        }
+
+        /* --- SCREENS --- */
+        .screen { display: none; padding: 15px; }
+        .screen.active { display: block; }
+        .view-content { display: none; }
+
+        /* --- WELCOME --- */
+        #screen-welcome {
+            height: 100vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+            background: radial-gradient(circle, #2a2a35 0%, #000000 100%);
+        }
+        input.rpg-input {
+            background: #000; color: var(--green); border: 2px solid white;
+            padding: 10px; font-family: 'VT323'; font-size: 1.5rem; text-align: center; width: 100%;
+        }
+
+        /* --- MAPA --- */
+        .semester-block { margin-bottom: 25px; }
+        .sem-header { color: var(--blue); border-bottom: 2px dashed #444; margin-bottom: 8px; }
+        
+        .quest-card {
+            padding: 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px;
+            cursor: pointer; position: relative; transition: transform 0.1s;
+        }
+        .quest-card:active { transform: scale(0.98); }
+        
+        .quest-card.passed { opacity: 0.5; border: 1px solid var(--green); }
+        .quest-card.locked { filter: grayscale(1); opacity: 0.6; }
+        .quest-card.active { background: #1a202c; border: 2px solid var(--blue); box-shadow: 0 0 10px rgba(77, 148, 255, 0.2); }
+
+        .status-icon { font-size: 1.5rem; }
+        .quest-code { color: var(--gray); font-size: 0.85rem; }
+
+        /* --- TROFEOS --- */
+        .trophy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .trophy-card {
+            background: #111; border: 2px solid #333; padding: 10px; text-align: center;
+            opacity: 0.5; filter: grayscale(1); transition: all 0.5s;
+        }
+        .trophy-card.unlocked {
+            opacity: 1; filter: grayscale(0); border-color: var(--gold);
+            background: radial-gradient(circle, #332b00 0%, #000 100%);
+            animation: popIn 0.5s;
+        }
+        .t-icon { font-size: 2rem; margin-bottom: 5px; }
+        .t-name { font-size: 1rem; color: var(--gold); font-weight: bold; }
+        .t-desc { font-size: 0.8rem; color: #aaa; line-height: 1.1; }
+
+        /* --- TOAST NOTIFICATION --- */
+        #toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
+            background: #000; border: 2px solid var(--gold); padding: 10px 20px;
+            display: flex; align-items: center; gap: 15px; z-index: 200;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+        #toast.show { transform: translateX(-50%) translateY(0); }
 
         /* --- MODAL --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.9); z-index: 100;
+            background: rgba(0,0,0,0.95); z-index: 100;
             display: none; align-items: center; justify-content: center;
         }
-        .modal-overlay.open { display: flex; }
-        
         .modal-box {
-            background: #202028; border: 4px solid white;
-            width: 90%; max-height: 90vh; overflow-y: auto;
-            padding: 20px; position: relative;
-        }
-        
-        input {
-            background: #000; color: var(--success); border: 2px solid #555;
-            font-family: 'VT323'; font-size: 1.2rem; padding: 10px; width: 100%; margin-bottom: 10px;
+            background: var(--panel); width: 90%; max-height: 80vh;
+            border: 4px solid white; padding: 20px; overflow-y: auto;
+            box-shadow: 0 0 30px rgba(255,255,255,0.1);
         }
 
         /* --- NAVBAR --- */
-        .navbar {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: #000; border-top: 4px solid white;
-            display: flex; justify-content: space-around; padding: 10px;
-            z-index: 50;
+        .nav {
+            position: fixed; bottom: 0; left: 0; right: 0; background: #000;
+            border-top: 4px solid white; display: flex; height: 75px; z-index: 50;
         }
-        .nav-btn {
-            background: none; border: none; color: #555; font-size: 2rem; cursor: pointer;
-        }
-        .nav-btn.active { color: var(--accent); transform: scale(1.2); text-shadow: 0 0 10px var(--accent); }
+        .nav-btn { flex: 1; background: none; border: none; color: #555; font-size: 1.8rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;}
+        .nav-btn span { font-size: 0.7rem; margin-top: -5px; font-family: 'VT323'; }
+        .nav-btn.active { color: var(--gold); text-shadow: 0 0 10px var(--gold); }
+
+        @keyframes popIn { 0% { transform: scale(0.5); } 100% { transform: scale(1); } }
 
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>PHARMACY QUEST</h1>
-        <div style="font-size: 1rem; color: #888;">PLAYER: CARRILLO</div>
-    </div>
-
-    <div id="view-active" class="view active">
-        <div style="text-align:center; padding:20px;">
-            <h2 style="color:var(--accent)">> MISIONES ACTIVAS</h2>
-        </div>
-        <div id="active-container"></div>
-        
-        <div style="padding:20px;">
-            <button class="pixel-btn btn-red" onclick="finishSemester()">TERMINAR NIVEL (Cerrar Semestre)</button>
+    <div id="toast">
+        <div style="font-size:2rem;">🏆</div>
+        <div>
+            <div style="color:var(--gold); font-size:0.8rem;">LOGRO DESBLOQUEADO</div>
+            <div id="toast-msg" style="color:white; font-weight:bold;">NOMBRE TROFEO</div>
         </div>
     </div>
 
-    <div id="view-map" class="view">
-        <div style="text-align:center; padding:20px;">
-            <h2 style="color:var(--gold)">> MAPA DEL MUNDO</h2>
-            <small>Toca una misión para equiparla</small>
-        </div>
-        <div id="map-container"></div>
-        
-        <div style="padding:50px 20px 20px 20px; text-align:center;">
-            <button onclick="hardReset()" style="background:none; border:none; color:#555; font-family:'VT323';">REINICIAR CARTUCHO (Borrar todo)</button>
+    <div id="screen-welcome" class="screen">
+        <h1 style="color:var(--gold); font-size:3.5rem; line-height:0.8; margin-bottom:20px;">
+            PHARMACY<br><span style="color:white; font-size:2rem;">RPG ULTIMATE</span>
+        </h1>
+        <div style="width:80%; max-width:300px;">
+            <input type="text" id="player-name" class="rpg-input" placeholder="NOMBRE JUGADOR">
+            <button class="btn btn-green" onclick="createProfile()">START GAME</button>
         </div>
     </div>
 
-    <div id="setup-modal" class="modal-overlay">
-        <div class="modal-box" style="text-align:center;">
-            <h2 style="color:var(--gold)">NUEVA PARTIDA DETECTADA</h2>
-            <p>Selecciona los niveles que ya completaste en el pasado:</p>
-            <div id="setup-list" style="text-align:left; max-height:300px; overflow-y:scroll; border:2px solid #555; padding:10px; margin-bottom:20px;"></div>
-            <button class="pixel-btn btn-green" onclick="finishSetup()">COMENZAR AVENTURA</button>
+    <div id="screen-game" class="screen">
+        <div class="hud">
+            <div class="hud-top">
+                <div id="hud-player">PLAYER</div>
+                <div id="hud-rank" class="player-rank">NOVATO</div>
+            </div>
+            <div class="xp-track">
+                <div id="xp-bar" class="xp-fill"></div>
+                <div id="xp-text" class="xp-text">0% COMPLETADO</div>
+            </div>
+        </div>
+
+        <div id="view-map" class="view-content">
+            <br>
+            <div id="curriculum-container"></div>
+            <br>
+            <button onclick="hardReset()" style="background:none; border:none; color:#444; width:100%; padding:20px;">[BORRAR PARTIDA]</button>
+        </div>
+
+        <div id="view-active" class="view-content" style="display:none;">
+            <h2 style="color:var(--blue); text-align:center; border-bottom:2px solid var(--blue);">MISIONES ACTUALES</h2>
+            <div id="active-list"></div>
+            <button class="btn btn-red" onclick="finishSemester()">CERRAR SEMESTRE</button>
+        </div>
+
+        <div id="view-trophies" class="view-content" style="display:none;">
+            <h2 style="color:var(--gold); text-align:center; border-bottom:2px solid var(--gold);">SALA DE TROFEOS</h2>
+            <div id="trophy-list" class="trophy-grid"></div>
         </div>
     </div>
 
-    <div id="detail-modal" class="modal-overlay">
+    <div id="modal" class="modal-overlay">
         <div class="modal-box">
             <div style="display:flex; justify-content:space-between;">
-                <h2 id="d-title" style="margin:0; color:var(--accent)">Nom</h2>
-                <button onclick="closeModal()" style="background:red; color:white; border:none; font-family:'VT323'; font-size:1.5rem;">X</button>
+                <h2 id="m-title" style="margin:0; color:var(--gold); line-height:1;">Título</h2>
+                <button onclick="closeModal()" style="background:none; border:none; color:red; font-size:2rem;">X</button>
             </div>
-            <div id="d-code" style="color:#888; margin-bottom:20px;">COD</div>
-
-            <div id="d-grades-section">
-                <div class="pixel-box">
-                    <div style="text-align:center;">HP ACTUAL (Promedio)</div>
-                    <div id="d-avg" style="font-size:3rem; text-align:center; color:white;">--</div>
-                </div>
-
-                <div id="d-eval-list"></div>
-                <button class="pixel-btn" onclick="addEval()">+ ITEM DE NOTA</button>
-                <br><br>
-                <button class="pixel-btn btn-red" onclick="dropSubject()">ABANDONAR MISIÓN</button>
-            </div>
-
-            <div id="d-enroll-section" style="display:none; text-align:center; padding-top:20px;">
-                <p id="d-lock-msg" style="color:var(--danger)"></p>
-                <button id="btn-enroll" class="pixel-btn btn-green" onclick="enrollCurrent()">ACEPTAR MISIÓN</button>
-                <br><br>
-                <button id="btn-force" class="pixel-btn btn-red" style="display:none" onclick="forceEnroll()">☠️ USAR CHEAT CODE (Forzar) ☠️</button>
-            </div>
+            <div id="m-code" style="color:var(--gray); margin-bottom:15px;">CODE</div>
+            <div id="m-content"></div>
         </div>
     </div>
 
-    <div class="navbar">
-        <button class="nav-btn active" onclick="switchView('view-active', this)">⚔️</button>
-        <button class="nav-btn" onclick="switchView('view-map', this)">🗺️</button>
+    <div id="navbar" class="nav" style="display:none;">
+        <button class="nav-btn active" onclick="switchTab('view-map', this)">
+            🗺️<span>MAPA</span>
+        </button>
+        <button class="nav-btn" onclick="switchTab('view-active', this)">
+            ⚔️<span>MISIONES</span>
+        </button>
+        <button class="nav-btn" onclick="switchTab('view-trophies', this)">
+            🏆<span>TROFEOS</span>
+        </button>
     </div>
 
 <script>
-    // --- BASE DE DATOS CURRICULAR (Completa) ---
-    const db = [
-        // SEMESTRE 1
-        {id:'DQUI1045', name:'Química General', sem:1, req:[]},
-        {id:'DBIO1091', name:'Biología Celular', sem:1, req:[]},
-        {id:'DCEX0002', name:'Matemática', sem:1, req:[]},
-        {id:'FORI0001', name:'Antropología', sem:1, req:[]},
-        {id:'QYFAA001', name:'Intro. Cs. Farmacéuticas', sem:1, req:[]},
-        {id:'QYFAA002', name:'Psicología General', sem:1, req:[]},
-        // SEMESTRE 2
-        {id:'DQUI1046', name:'Química Inorgánica', sem:2, req:['DQUI1045']},
-        {id:'DCEX0003', name:'Cálculo Diferencial', sem:2, req:['DCEX0002']},
-        {id:'DCE0010', name:'Física', sem:2, req:['DCEX0002']},
-        {id:'DCEX0005', name:'Bioestadística', sem:2, req:['DCEX0002']},
-        {id:'QYFAB001', name:'Fund. Quehacer Farm.', sem:2, req:['QYFAA001']},
-        {id:'FORI0002', name:'Ética', sem:2, req:['FORI0001']},
-        // SEMESTRE 3
-        {id:'DSPU0012', name:'Epidemiología y SP', sem:3, req:['DCEX0005']},
-        {id:'DQUI1047', name:'Química Analítica', sem:3, req:['DQUI1046']},
-        {id:'DQUI1052', name:'Química Orgánica', sem:3, req:['DQUI1046']},
-        {id:'DQUI1053', name:'Fisicoquímica', sem:3, req:['DCE0010']}, // EL FAMOSO TOPE DE FÍSICA
-        {id:'DBIO1085', name:'Fisiología Humana', sem:3, req:['DBIO1091']},
-        // SEMESTRE 4
-        {id:'DSPU0014', name:'Salud Pública', sem:4, req:['DSPU0012']},
-        {id:'DQUI1054', name:'Análisis Instrumental', sem:4, req:['DQUI1047']},
-        {id:'DQUI1055', name:'Química Orgánica Avanzada', sem:4, req:['DQUI1052']},
-        {id:'DBIO1094', name:'Bioquímica General', sem:4, req:['DQUI1052']},
-        {id:'DMOR0019', name:'Fisiopatología', sem:4, req:['DBIO1085']},
-        // SEMESTRE 5
-        {id:'DBIO1097', name:'Farmacología I', sem:5, req:['DMOR0019','DBIO1094']},
-        {id:'QYFAE001', name:'Tecnología Farm. I', sem:5, req:['DQUI1053']},
-        {id:'QYFAE002', name:'Química Farm. I', sem:5, req:['DQUI1055']},
-        {id:'DBIO1095', name:'Microbiología Gral', sem:5, req:['DBIO1094']},
-        {id:'FALU0001', name:'Salud Digital', sem:5, req:[]},
-        {id:'FORI0003', name:'Persona y Sociedad', sem:5, req:['FORI0002']},
-        // SEMESTRE 6
-        {id:'DBIO1096', name:'Farmacología II', sem:6, req:['DBIO1097']},
-        {id:'QYFAF001', name:'Tecnología Farm. II', sem:6, req:['QYFAE001']},
-        {id:'QYFAF002', name:'Química Farm. II', sem:6, req:['QYFAE002']},
-        {id:'DBIO0002', name:'Bioética', sem:6, req:['FORI0002']},
-        {id:'ELECT001', name:'Electivo I', sem:6, req:[]},
-        // SEMESTRE 7
-        {id:'QYFAG003', name:'Farmacia Clínica I', sem:7, req:['DBIO1096']},
-        {id:'QYFAG002', name:'Farmacognosia', sem:7, req:['DBIO1094']},
-        {id:'QYFAH001', name:'Control de Calidad', sem:7, req:['DQUI1054','QYFAE001']},
-        {id:'QYFAH002', name:'Legislación Farm.', sem:7, req:['QYFAE001']},
-        {id:'QYFAG001', name:'Práctica I', sem:7, req:['QYFAE001']},
-        {id:'DSPU0011', name:'Metodología Invest.', sem:7, req:['DCEX0005']},
-        // SEMESTRE 8
-        {id:'QYFAH003', name:'Farmacia Clínica II', sem:8, req:['QYFAG003']},
-        {id:'QYFAH005', name:'Biofarmacia', sem:8, req:['QYFAF001','DBIO1096']},
-        {id:'QYFAH006', name:'Toxicología', sem:8, req:['DBIO1096','DBIO1094']},
-        {id:'QYFAH004', name:'Farmacia Asistencial', sem:8, req:['QYFAG003']},
-        {id:'QYFAH007', name:'Hito Integrativo', sem:8, req:[]}, // req complejo, lo dejamos abierto o manual
-        // SEMESTRE 9
-        {id:'QYFAJ001', name:'Gestión y Marketing', sem:9, req:['QYFAH004']},
-        {id:'QYFAJ002', name:'Farmacovigilancia', sem:9, req:['QYFAG003']},
-        {id:'ELECP001', name:'Electivo Profesional I', sem:9, req:[]},
-        // SEMESTRE 10
-        {id:'QYFAK003', name:'Práctica II (Comunitaria)', sem:10, req:['QYFAG001','QYFAH004']},
-        {id:'QYFAK001', name:'Internado', sem:10, req:[]}
+    // --- BASE DE DATOS ---
+    const curriculum = [
+        // SEM 1
+        {id:'DQUI1045', n:'Química General', s:1, req:[]},
+        {id:'DBIO1091', n:'Biología Celular', s:1, req:[]},
+        {id:'DCEX0002', n:'Matemática', s:1, req:[]},
+        {id:'FORI0001', n:'Antropología', s:1, req:[]},
+        {id:'QYFAA001', n:'Intro. Cs. Farmacéuticas', s:1, req:[]},
+        {id:'QYFAA002', n:'Psicología General', s:1, req:[]},
+        // SEM 2
+        {id:'DQUI1046', n:'Química Inorgánica', s:2, req:['DQUI1045']},
+        {id:'DCEX0003', n:'Cálculo Diferencial', s:2, req:['DCEX0002']},
+        {id:'DCE0010', n:'Física', s:2, req:['DCEX0002']},
+        {id:'DCEX0005', n:'Bioestadística', s:2, req:['DCEX0002']},
+        {id:'QYFAB001', n:'Fund. Quehacer Farm.', s:2, req:['QYFAA001']},
+        {id:'FORI0002', n:'Ética', s:2, req:['FORI0001']},
+        // SEM 3
+        {id:'DSPU0012', n:'Epidemiología y SP', s:3, req:['DCEX0005']},
+        {id:'DQUI1047', n:'Química Analítica', s:3, req:['DQUI1046']},
+        {id:'DQUI1052', n:'Química Orgánica', s:3, req:['DQUI1046']},
+        {id:'DQUI1053', n:'Fisicoquímica', s:3, req:['DCE0010']}, 
+        {id:'DBIO1085', n:'Fisiología Humana', s:3, req:['DBIO1091']},
+        // SEM 4
+        {id:'DSPU0014', n:'Salud Pública', s:4, req:['DSPU0012']},
+        {id:'DQUI1054', n:'Análisis Instrumental', s:4, req:['DQUI1047']},
+        {id:'DQUI1055', n:'Química Orgánica Avanzada', s:4, req:['DQUI1052']},
+        {id:'DBIO1094', n:'Bioquímica General', s:4, req:['DQUI1052']},
+        {id:'DMOR0019', n:'Fisiopatología', s:4, req:['DBIO1085']},
+        // SEM 5
+        {id:'DBIO1097', n:'Farmacología I', s:5, req:['DMOR0019','DBIO1094']},
+        {id:'QYFAE001', n:'Tecnología Farm. I', s:5, req:['DQUI1053']},
+        {id:'QYFAE002', n:'Química Farm. I', s:5, req:['DQUI1055']},
+        {id:'DBIO1095', n:'Microbiología Gral', s:5, req:['DBIO1094']},
+        {id:'FALU0001', n:'Salud Digital', s:5, req:[]}, 
+        {id:'FORI0003', n:'Persona y Sociedad', s:5, req:['FORI0002']},
+        // SEM 6
+        {id:'DBIO1096', n:'Farmacología II', s:6, req:['DBIO1097']},
+        {id:'QYFAF001', n:'Tecnología Farm. II', s:6, req:['QYFAE001']},
+        {id:'QYFAF002', n:'Química Farm. II', s:6, req:['QYFAE002']},
+        {id:'DBIO0002', n:'Bioética', s:6, req:['FORI0002']},
+        {id:'ELECT001', n:'Electivo I', s:6, req:[]},
+        // SEM 7
+        {id:'QYFAG003', n:'Farmacia Clínica I', s:7, req:['DBIO1096']},
+        {id:'QYFAG002', n:'Farmacognosia', s:7, req:['DBIO1094']},
+        {id:'QYFAH001', n:'Control de Calidad', s:7, req:['DQUI1054','QYFAE001']},
+        {id:'QYFAH002', n:'Legislación Farm.', s:7, req:['QYFAE001']},
+        {id:'QYFAG001', n:'Práctica I', s:7, req:['QYFAE001']},
+        {id:'DSPU0011', n:'Metodología Invest.', s:7, req:['DCEX0005']},
+        // SEM 8
+        {id:'QYFAH003', n:'Farmacia Clínica II', s:8, req:['QYFAG003']},
+        {id:'QYFAH005', n:'Biofarmacia', s:8, req:['QYFAF001','DBIO1096']},
+        {id:'QYFAH006', n:'Toxicología', s:8, req:['DBIO1096','DBIO1094']},
+        {id:'QYFAH004', n:'Farmacia Asistencial', s:8, req:['QYFAG003']},
+        {id:'QYFAH007', n:'Hito Integrativo', s:8, req:['QYFAF001']}, 
+        // SEM 9
+        {id:'QYFAJ001', n:'Gestión y Marketing', s:9, req:['QYFAH004']},
+        {id:'QYFAJ002', n:'Farmacovigilancia', s:9, req:['QYFAG003']},
+        {id:'ELECP001', n:'Electivo Profesional I', s:9, req:['QYFAH003']}, 
+        // SEM 10
+        {id:'QYFAK003', n:'Práctica II (Comunitaria)', s:10, req:['QYFAG001','QYFAH004']},
+        {id:'QYFAK001', n:'Internado', s:10, req:[]}
+    ];
+
+    const achievementsDB = [
+        {id:'t1', icon:'👶', title:'PRIMEROS PASOS', desc:'Aprueba tu primer ramo'},
+        {id:'t2', icon:'⚖️', title:'POR UN PELO', desc:'Aprueba con promedio entre 3.95 y 4.0'},
+        {id:'t3', icon:'🤓', title:'CEREBRITO', desc:'Obtén un promedio 7.0'},
+        {id:'t4', icon:'💻', title:'HACKER', desc:'Usa la consola de trucos con éxito'},
+        {id:'t5', icon:'🔥', title:'MITAD DEL CAMINO', desc:'Completa el 5to Semestre'},
+        {id:'t6', icon:'👑', title:'FARMACÉUTICO', desc:'Completa toda la malla'}
     ];
 
     // --- STATE ---
-    let state = { passed: [], current: [], data: {} };
+    let player = {
+        name: "Player",
+        passed: [],
+        current: [],
+        grades: {},
+        trophies: [] // ids unlocked
+    };
 
+    // --- CORE ---
     function init() {
-        const stored = localStorage.getItem('pharmacyQuestSave');
-        if(stored) {
-            state = JSON.parse(stored);
-            renderActive();
-            renderMap();
+        const save = localStorage.getItem('pharmacyRPG_ULTIMATE');
+        if (save) {
+            player = JSON.parse(save);
+            startGame();
         } else {
-            // SI ES PRIMERA VEZ, LANZAR SETUP
-            launchSetup();
+            document.getElementById('screen-welcome').classList.add('active');
         }
     }
 
-    function save() {
-        localStorage.setItem('pharmacyQuestSave', JSON.stringify(state));
+    function createProfile() {
+        const name = document.getElementById('player-name').value.trim();
+        if (!name) return alert("INGRESA UN NOMBRE");
+        player.name = name.toUpperCase();
+        saveGame();
+        startGame();
     }
 
-    // --- SETUP INICIAL ---
-    function launchSetup() {
-        const list = document.getElementById('setup-list');
-        list.innerHTML = '';
-        // Mostrar solo hasta semestre 6 para no saturar, o todo
-        db.forEach(sub => {
-            list.innerHTML += `
-                <div style="margin-bottom:5px;">
-                    <input type="checkbox" value="${sub.id}" id="chk-${sub.id}" style="width:auto;">
-                    <label for="chk-${sub.id}">${sub.name} (${sub.id})</label>
-                </div>
-            `;
-        });
-        document.getElementById('setup-modal').classList.add('open');
-    }
-
-    function finishSetup() {
-        const chks = document.querySelectorAll('#setup-list input:checked');
-        chks.forEach(c => state.passed.push(c.value));
-        save();
-        document.getElementById('setup-modal').classList.remove('open');
-        renderActive();
-        renderMap();
-    }
-
-    // --- RENDER ACTIVE (DASHBOARD) ---
-    function renderActive() {
-        const con = document.getElementById('active-container');
-        con.innerHTML = '';
+    function startGame() {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('screen-welcome').style.display = 'none';
+        document.getElementById('screen-game').classList.add('active');
+        document.getElementById('navbar').style.display = 'flex';
         
-        if(state.current.length === 0) {
-            con.innerHTML = '<p style="text-align:center; padding:20px;">NO HAY MISIONES EN CURSO.<br>VE AL MAPA PARA EQUIPARTE.</p>';
-            return;
-        }
+        document.getElementById('hud-player').innerText = player.name;
+        updateStats();
+        renderMap();
+        renderActive();
+        renderTrophies();
+    }
 
-        state.current.forEach(code => {
-            const sub = db.find(s => s.id === code);
-            if(!sub) return;
-            const avg = getAvg(code);
-            const hpPercent = Math.min(100, (avg / 7.0) * 100);
-            
-            con.innerHTML += `
-                <div class="pixel-box" onclick="openModal('${code}')">
-                    <div style="display:flex; justify-content:space-between;">
-                        <span style="color:var(--gold)">${sub.name}</span>
-                        <span>HP: ${avg || '??'}</span>
-                    </div>
-                    <div class="hp-bar-container">
-                        <div class="hp-bar" style="width:${hpPercent}%; background:${avg < 4.0 ? 'var(--danger)' : 'var(--success)'}"></div>
-                        <div class="hp-text">${sub.id}</div>
-                    </div>
+    function saveGame() {
+        localStorage.setItem('pharmacyRPG_ULTIMATE', JSON.stringify(player));
+        updateStats();
+    }
+
+    // --- STATS & RANKS ---
+    function updateStats() {
+        const total = curriculum.length;
+        const passed = player.passed.length;
+        const pct = Math.floor((passed / total) * 100);
+        
+        document.getElementById('xp-bar').style.width = pct + '%';
+        document.getElementById('xp-text').innerText = pct + '% COMPLETADO';
+
+        let rank = "NOVATO";
+        if(pct > 10) rank = "APRENDIZ";
+        if(pct > 30) rank = "ASISTENTE";
+        if(pct > 50) rank = "QUÍMICO";
+        if(pct > 80) rank = "EXPERTO";
+        if(pct == 100) rank = "LEYENDA";
+        
+        document.getElementById('hud-rank').innerText = rank;
+
+        checkAchievements();
+    }
+
+    // --- ACHIEVEMENT SYSTEM ---
+    function checkAchievements() {
+        const unlock = (id) => {
+            if(!player.trophies.includes(id)) {
+                player.trophies.push(id);
+                const t = achievementsDB.find(x => x.id === id);
+                showToast(t.title);
+                saveGame(); // Save unlock
+                renderTrophies();
+            }
+        };
+
+        // T1: Primer Ramo
+        if(player.passed.length > 0) unlock('t1');
+        
+        // T6: Completado
+        if(player.passed.length === curriculum.length) unlock('t6');
+
+        // T5: Sem 5 (Aproximado por cantidad)
+        if(player.passed.length >= 30) unlock('t5');
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        document.getElementById('toast-msg').innerText = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function renderTrophies() {
+        const grid = document.getElementById('trophy-list');
+        grid.innerHTML = '';
+        achievementsDB.forEach(t => {
+            const isUnlocked = player.trophies.includes(t.id);
+            grid.innerHTML += `
+                <div class="trophy-card ${isUnlocked ? 'unlocked' : ''} pixel-border">
+                    <div class="t-icon">${t.icon}</div>
+                    <div class="t-name">${isUnlocked ? t.title : '???'}</div>
+                    <div class="t-desc">${t.desc}</div>
                 </div>
             `;
         });
     }
 
-    // --- RENDER MAP (MALLA) ---
+    // --- MAP SYSTEM ---
     function renderMap() {
-        const con = document.getElementById('map-container');
-        con.innerHTML = '';
-
-        // Agrupar por semestres
+        const container = document.getElementById('curriculum-container');
+        container.innerHTML = '';
         const sems = {};
-        db.forEach(s => {
-            if(!sems[s.sem]) sems[s.sem] = [];
-            sems[s.sem].push(s);
-        });
+        curriculum.forEach(c => { if(!sems[c.s]) sems[c.s]=[]; sems[c.s].push(c); });
 
         for(let i=1; i<=10; i++) {
             if(!sems[i]) continue;
-            
-            const section = document.createElement('div');
-            section.className = 'semester-block';
-            section.innerHTML = `<div class="sem-title">NIVEL ${i}</div>`;
-            
-            const list = document.createElement('div');
-            list.className = 'pixel-box';
-            
+            const block = document.createElement('div');
+            block.className = 'semester-block';
+            block.innerHTML = `<div class="sem-header">> NIVEL ${i}</div>`;
             sems[i].forEach(sub => {
-                const isPassed = state.passed.includes(sub.id);
-                const isCurrent = state.current.includes(sub.id);
+                const isPassed = player.passed.includes(sub.id);
+                const isActive = player.current.includes(sub.id);
+                const missing = sub.req.filter(r => !player.passed.includes(r));
+                const isLocked = missing.length > 0 && !isPassed && !isActive;
                 
-                // Verificar requisitos
-                const missingReqs = sub.req.filter(r => !state.passed.includes(r));
-                const isLocked = missingReqs.length > 0 && !isPassed && !isCurrent;
-                
-                let icon = '❓';
-                let statusClass = '';
+                let cl = '', ic = '🔹';
+                if(isPassed) { cl='passed'; ic='🏆'; }
+                else if(isActive) { cl='active'; ic='⚔️'; }
+                else if(isLocked) { cl='locked'; ic='🔒'; }
+                else ic='✨';
 
-                if(isPassed) { icon = '🏆'; statusClass = 'st-passed'; }
-                else if(isCurrent) { icon = '⚔️'; statusClass = 'st-active'; }
-                else if(isLocked) { icon = '🔒'; statusClass = 'st-locked'; }
-                else { icon = '💎'; statusClass = 'st-available'; }
-
-                list.innerHTML += `
-                    <div class="course-row ${statusClass}" onclick="handleMapClick('${sub.id}', ${isLocked}, '${missingReqs.join(',')}')">
-                        <div class="course-status">${icon}</div>
-                        <div class="course-info">
-                            <div class="course-name">${sub.name}</div>
-                            <div class="course-code">${sub.id}</div>
+                block.innerHTML += `
+                    <div class="quest-card ${cl} pixel-border" onclick="openModal('${sub.id}', ${isLocked}, '${missing.join(', ')}')">
+                        <div class="status-icon">${ic}</div>
+                        <div>
+                            <div style="font-weight:bold;">${sub.n}</div>
+                            <div class="quest-code">${sub.id}</div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
-            
-            section.appendChild(list);
-            con.appendChild(section);
+            container.appendChild(block);
         }
     }
 
-    // --- INTERACCIÓN ---
-    let activeSub = null;
+    // --- MODAL & LOGIC ---
+    let activeId = null;
 
-    function handleMapClick(id, isLocked, missing) {
-        activeSub = id;
-        const sub = db.find(s => s.id === id);
-        const isCurrent = state.current.includes(id);
-        const isPassed = state.passed.includes(id);
-
-        // Configurar Modal
-        document.getElementById('d-title').innerText = sub.name;
-        document.getElementById('d-code').innerText = sub.id;
-
-        const gradeSec = document.getElementById('d-grades-section');
-        const enrollSec = document.getElementById('d-enroll-section');
-        const btnForce = document.getElementById('btn-force');
-        const lockMsg = document.getElementById('d-lock-msg');
-        const btnEnroll = document.getElementById('btn-enroll');
-
-        if(isCurrent || isPassed) {
-            // Modo Notas
-            gradeSec.style.display = 'block';
-            enrollSec.style.display = 'none';
-            renderEvals();
-        } else {
-            // Modo Inscripción
-            gradeSec.style.display = 'none';
-            enrollSec.style.display = 'block';
-            
-            if(isLocked) {
-                lockMsg.innerHTML = `BLOQUEADO POR: ${missing}<br>¿Usar Cheat Code?`;
-                btnEnroll.style.display = 'none';
-                btnForce.style.display = 'inline-block';
-            } else {
-                lockMsg.innerText = "MISIÓN DISPONIBLE";
-                btnEnroll.style.display = 'inline-block';
-                btnForce.style.display = 'none';
-            }
-        }
-
-        document.getElementById('detail-modal').classList.add('open');
-    }
-
-    function closeModal() {
-        document.getElementById('detail-modal').classList.remove('open');
-        renderActive();
-        renderMap();
-    }
-
-    function enrollCurrent() {
-        state.current.push(activeSub);
-        save();
-        closeModal();
-        alert("¡MISIÓN ACEPTADA!");
-    }
-
-    function forceEnroll() {
-        if(confirm("ADVERTENCIA: Estás forzando una materia sin requisitos. ¿Continuar?")) {
-            enrollCurrent();
-        }
-    }
-    
-    function dropSubject() {
-        if(confirm("¿Abandonar misión? Se perderán los datos de notas.")) {
-            state.current = state.current.filter(c => c !== activeSub);
-            delete state.data[activeSub];
-            save();
-            closeModal();
-        }
-    }
-
-    // --- SISTEMA DE NOTAS ---
-    function renderEvals() {
-        const list = document.getElementById('d-eval-list');
-        list.innerHTML = '';
+    function openModal(id, isLocked, missing) {
+        activeId = id;
+        const sub = curriculum.find(c=>c.id===id);
+        const isPassed = player.passed.includes(id);
+        const isActive = player.current.includes(id);
         
-        if(!state.data[activeSub]) state.data[activeSub] = {evals:[]};
-        const evals = state.data[activeSub].evals;
-
-        evals.forEach((ev, i) => {
-            list.innerHTML += `
-                <div style="display:flex; gap:5px; margin-bottom:5px;">
-                    <input value="${ev.name}" placeholder="Item" onchange="updEv(${i},'name',this.value)">
-                    <input type="number" value="${ev.grade}" placeholder="Nota" style="width:60px" oninput="updEv(${i},'grade',this.value)">
-                    <input type="number" value="${ev.weight}" placeholder="%" style="width:60px" oninput="updEv(${i},'weight',this.value)">
-                    <button onclick="delEv(${i})" style="background:red; border:none; color:white;">X</button>
-                </div>
-            `;
-        });
-
-        const avg = getAvg(activeSub);
-        const disp = document.getElementById('d-avg');
-        disp.innerText = avg || '--';
-        disp.style.color = avg >= 4.0 ? 'var(--success)' : 'var(--danger)';
-    }
-
-    function addEval() { state.data[activeSub].evals.push({name:'',grade:'',weight:''}); save(); renderEvals(); }
-    function updEv(i, f, v) { state.data[activeSub].evals[i][f] = v; save(); if(f!=='name') renderEvals(); }
-    function delEv(i) { state.data[activeSub].evals.splice(i,1); save(); renderEvals(); }
-
-    function getAvg(code) {
-        const evals = state.data[code]?.evals || [];
-        if(!evals.length) return '';
-        let sum = 0;
-        evals.forEach(e => {
-            const g = parseFloat(e.grade); const w = parseFloat(e.weight);
-            if(!isNaN(g) && !isNaN(w)) sum += g * (w/100);
-        });
-        return sum === 0 ? '' : sum.toFixed(1);
-    }
-
-    // --- UTILS ---
-    function switchView(id, btn) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    }
-
-    function finishSemester() {
-        if(confirm("¿COMPLETAR NIVEL? Las misiones con HP > 4.0 se marcarán como ganadas.")) {
-            const passedNow = [];
-            state.current.forEach(c => {
-                if(parseFloat(getAvg(c)) >= 4.0) passedNow.push(c);
-            });
-            state.passed = [...state.passed, ...passedNow];
-            state.current = [];
-            state.data = {};
-            save();
-            alert(`GANASTE ${passedNow.length} INSIGNIAS NUEVAS.`);
-            renderActive();
-            renderMap();
-        }
-    }
-    
-    function hardReset() {
-        if(confirm("¿GAME OVER? Esto borrará todo tu progreso.")) {
-            localStorage.removeItem('pharmacyQuestSave');
-            location.reload();
-        }
-    }
-
-    // START
-    init();
-
-</script>
-</body>
-</html>
+        document.getElementById('modal').style.display = 'flex';
+        document.getElementById('m-title').innerText = sub.
