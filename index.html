@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Pharmacy RPG Ultimate</title>
+    <title>Pharmacy RPG Final</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -13,123 +13,70 @@
             --red: #ff4d4d;
             --blue: #4d94ff;
             --gold: #ffd700;
-            --purple: #bd93f9;
             --gray: #6c6c7d;
             --text: #eee;
-            --pixel: 4px;
         }
 
         * { box-sizing: border-box; outline: none; user-select: none; -webkit-tap-highlight-color: transparent; }
 
         body {
             margin: 0; padding: 0;
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'VT323', monospace;
-            font-size: 20px;
+            background: var(--bg); color: var(--text);
+            font-family: 'VT323', monospace; font-size: 20px;
             padding-bottom: 90px;
         }
 
-        /* --- UI UTILS --- */
+        /* --- UI ELEMENTS --- */
         .pixel-border {
-            box-shadow: 
-                -4px 0 0 0 rgba(255,255,255,0.2),
-                4px 0 0 0 rgba(255,255,255,0.2),
-                0 -4px 0 0 rgba(255,255,255,0.2),
-                0 4px 0 0 rgba(255,255,255,0.2);
-            margin: 6px;
-            background: var(--panel);
+            box-shadow: -4px 0 0 0 rgba(255,255,255,0.2), 4px 0 0 0 rgba(255,255,255,0.2), 0 -4px 0 0 rgba(255,255,255,0.2), 0 4px 0 0 rgba(255,255,255,0.2);
+            margin: 6px; background: var(--panel);
         }
-
         .btn {
-            background: var(--blue); color: #000; border: none;
+            background: var(--blue); color: #000; border: 2px solid white;
             padding: 12px; font-family: 'VT323'; font-size: 1.3rem;
-            text-transform: uppercase; cursor: pointer; width: 100%;
-            display: block; margin-top: 10px; border: 2px solid white;
+            text-transform: uppercase; cursor: pointer; width: 100%; display: block; margin-top: 10px;
         }
         .btn:active { transform: scale(0.98); }
         .btn-red { background: var(--red); }
         .btn-green { background: var(--green); }
 
-        /* --- HUD & XP BAR --- */
-        .hud {
-            background: #000; border-bottom: 4px solid white; padding: 10px 15px;
-            position: sticky; top: 0; z-index: 20;
-        }
-        .hud-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 5px; }
-        .player-rank { color: var(--gold); font-size: 1.2rem; text-shadow: 0 0 5px var(--gold); }
-        
-        .xp-track {
-            width: 100%; height: 16px; background: #333; border: 2px solid white; position: relative;
-        }
-        .xp-fill {
-            height: 100%; background: linear-gradient(90deg, var(--blue), var(--purple));
-            width: 0%; transition: width 0.5s ease;
-        }
-        .xp-text {
-            position: absolute; top: -2px; width: 100%; text-align: center;
-            font-size: 0.8rem; color: white; text-shadow: 1px 1px 0 #000;
-        }
-
         /* --- SCREENS --- */
-        .screen { display: none; padding: 15px; }
-        .screen.active { display: block; }
-        .view-content { display: none; }
-
-        /* --- WELCOME --- */
+        .screen { display: none; height: 100vh; width: 100%; }
+        .screen.active { display: flex; flex-direction: column; }
+        
+        /* WELCOME */
         #screen-welcome {
-            height: 100vh; display: flex; flex-direction: column;
             justify-content: center; align-items: center; text-align: center;
             background: radial-gradient(circle, #2a2a35 0%, #000000 100%);
+            position: absolute; top: 0; left: 0; z-index: 200;
         }
         input.rpg-input {
             background: #000; color: var(--green); border: 2px solid white;
             padding: 10px; font-family: 'VT323'; font-size: 1.5rem; text-align: center; width: 100%;
         }
 
-        /* --- MAPA --- */
+        /* GAME UI */
+        .hud {
+            background: #000; border-bottom: 4px solid white; padding: 10px 15px;
+            position: sticky; top: 0; z-index: 20;
+        }
+        .xp-track { width: 100%; height: 16px; background: #333; border: 2px solid white; position: relative; margin-top:5px; }
+        .xp-fill { height: 100%; background: linear-gradient(90deg, var(--blue), #bd93f9); width: 0%; transition: width 0.5s; }
+        
+        .view-content { display: none; padding: 15px; }
+        
+        /* QUEST CARDS */
         .semester-block { margin-bottom: 25px; }
         .sem-header { color: var(--blue); border-bottom: 2px dashed #444; margin-bottom: 8px; }
-        
         .quest-card {
             padding: 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px;
-            cursor: pointer; position: relative; transition: transform 0.1s;
+            cursor: pointer; position: relative;
         }
-        .quest-card:active { transform: scale(0.98); }
-        
         .quest-card.passed { opacity: 0.5; border: 1px solid var(--green); }
         .quest-card.locked { filter: grayscale(1); opacity: 0.6; }
-        .quest-card.active { background: #1a202c; border: 2px solid var(--blue); box-shadow: 0 0 10px rgba(77, 148, 255, 0.2); }
+        .quest-card.active { background: #1a202c; border: 2px solid var(--blue); }
 
-        .status-icon { font-size: 1.5rem; }
-        .quest-code { color: var(--gray); font-size: 0.85rem; }
-
-        /* --- TROFEOS --- */
-        .trophy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .trophy-card {
-            background: #111; border: 2px solid #333; padding: 10px; text-align: center;
-            opacity: 0.5; filter: grayscale(1); transition: all 0.5s;
-        }
-        .trophy-card.unlocked {
-            opacity: 1; filter: grayscale(0); border-color: var(--gold);
-            background: radial-gradient(circle, #332b00 0%, #000 100%);
-            animation: popIn 0.5s;
-        }
-        .t-icon { font-size: 2rem; margin-bottom: 5px; }
-        .t-name { font-size: 1rem; color: var(--gold); font-weight: bold; }
-        .t-desc { font-size: 0.8rem; color: #aaa; line-height: 1.1; }
-
-        /* --- TOAST NOTIFICATION --- */
-        #toast {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
-            background: #000; border: 2px solid var(--gold); padding: 10px 20px;
-            display: flex; align-items: center; gap: 15px; z-index: 200;
-            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-        }
-        #toast.show { transform: translateX(-50%) translateY(0); }
-
-        /* --- MODAL --- */
+        /* MODALS & DIALOGS */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.95); z-index: 100;
@@ -138,19 +85,45 @@
         .modal-box {
             background: var(--panel); width: 90%; max-height: 80vh;
             border: 4px solid white; padding: 20px; overflow-y: auto;
-            box-shadow: 0 0 30px rgba(255,255,255,0.1);
+            box-shadow: 0 0 30px rgba(255,255,255,0.1); text-align: center;
         }
 
-        /* --- NAVBAR --- */
+        /* DIALOGO PERSONALIZADO (REEMPLAZO ALERT) */
+        #dialog-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8); z-index: 300;
+            display: none; align-items: center; justify-content: center;
+        }
+        .dialog-box {
+            background: #000; border: 4px double white; padding: 20px; width: 85%; text-align: center;
+        }
+        .dialog-msg { color: white; font-size: 1.2rem; margin-bottom: 20px; line-height: 1.2; }
+        .dialog-btns { display: flex; gap: 10px; justify-content: center; }
+        .d-btn { flex: 1; padding: 10px; border: 2px solid white; cursor: pointer; font-family: 'VT323'; font-size: 1.2rem; }
+        .d-yes { background: var(--green); color: black; }
+        .d-no { background: var(--red); color: white; }
+
+        /* NAVBAR */
         .nav {
             position: fixed; bottom: 0; left: 0; right: 0; background: #000;
             border-top: 4px solid white; display: flex; height: 75px; z-index: 50;
         }
         .nav-btn { flex: 1; background: none; border: none; color: #555; font-size: 1.8rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;}
-        .nav-btn span { font-size: 0.7rem; margin-top: -5px; font-family: 'VT323'; }
         .nav-btn.active { color: var(--gold); text-shadow: 0 0 10px var(--gold); }
 
-        @keyframes popIn { 0% { transform: scale(0.5); } 100% { transform: scale(1); } }
+        /* TROPHIES */
+        .trophy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .trophy-card { background: #111; border: 2px solid #333; padding: 10px; opacity: 0.5; filter: grayscale(1); }
+        .trophy-card.unlocked { opacity: 1; filter: grayscale(0); border-color: var(--gold); background: radial-gradient(circle, #332b00 0%, #000 100%); }
+        
+        /* TOAST */
+        #toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150px);
+            background: #000; border: 2px solid var(--gold); padding: 10px 20px;
+            display: flex; align-items: center; gap: 15px; z-index: 400;
+            transition: transform 0.5s;
+        }
+        #toast.show { transform: translateX(-50%) translateY(0); }
 
     </style>
 </head>
@@ -164,43 +137,50 @@
         </div>
     </div>
 
-    <div id="screen-welcome" class="screen">
+    <div id="dialog-overlay">
+        <div class="dialog-box">
+            <div id="dialog-text" class="dialog-msg">MENSAJE DEL SISTEMA</div>
+            <div id="dialog-buttons" class="dialog-btns">
+                </div>
+        </div>
+    </div>
+
+    <div id="screen-welcome" class="screen active">
         <h1 style="color:var(--gold); font-size:3.5rem; line-height:0.8; margin-bottom:20px;">
-            PHARMACY<br><span style="color:white; font-size:2rem;">RPG ULTIMATE</span>
+            PHARMACY<br><span style="color:white; font-size:2rem;">RPG FINAL</span>
         </h1>
         <div style="width:80%; max-width:300px;">
-            <input type="text" id="player-name" class="rpg-input" placeholder="NOMBRE JUGADOR">
+            <p style="color:var(--gray);">INGRESE CREDENCIALES</p>
+            <input type="text" id="player-name" class="rpg-input" placeholder="TU NOMBRE">
             <button class="btn btn-green" onclick="createProfile()">START GAME</button>
         </div>
     </div>
 
     <div id="screen-game" class="screen">
         <div class="hud">
-            <div class="hud-top">
+            <div style="display:flex; justify-content:space-between; align-items:flex-end;">
                 <div id="hud-player">PLAYER</div>
-                <div id="hud-rank" class="player-rank">NOVATO</div>
+                <div id="hud-rank" style="color:var(--gold);">NOVATO</div>
             </div>
             <div class="xp-track">
                 <div id="xp-bar" class="xp-fill"></div>
-                <div id="xp-text" class="xp-text">0% COMPLETADO</div>
+                <div style="position:absolute; top:-2px; width:100%; text-align:center; font-size:0.8rem; color:white;">XP</div>
             </div>
         </div>
 
-        <div id="view-map" class="view-content">
-            <br>
-            <div id="curriculum-container"></div>
-            <br>
-            <button onclick="hardReset()" style="background:none; border:none; color:#444; width:100%; padding:20px;">[BORRAR PARTIDA]</button>
+        <div id="view-map" class="view-content" style="display:block;">
+            <br><div id="curriculum-container"></div><br>
+            <button onclick="askHardReset()" style="background:none; border:none; color:#444; width:100%; padding:20px;">[BORRAR PARTIDA]</button>
         </div>
 
-        <div id="view-active" class="view-content" style="display:none;">
+        <div id="view-active" class="view-content">
             <h2 style="color:var(--blue); text-align:center; border-bottom:2px solid var(--blue);">MISIONES ACTUALES</h2>
             <div id="active-list"></div>
-            <button class="btn btn-red" onclick="finishSemester()">CERRAR SEMESTRE</button>
+            <button class="btn btn-red" onclick="askFinishSemester()">CERRAR SEMESTRE</button>
         </div>
 
-        <div id="view-trophies" class="view-content" style="display:none;">
-            <h2 style="color:var(--gold); text-align:center; border-bottom:2px solid var(--gold);">SALA DE TROFEOS</h2>
+        <div id="view-trophies" class="view-content">
+            <h2 style="color:var(--gold); text-align:center;">SALA DE TROFEOS</h2>
             <div id="trophy-list" class="trophy-grid"></div>
         </div>
     </div>
@@ -208,255 +188,350 @@
     <div id="modal" class="modal-overlay">
         <div class="modal-box">
             <div style="display:flex; justify-content:space-between;">
-                <h2 id="m-title" style="margin:0; color:var(--gold); line-height:1;">Título</h2>
+                <h2 id="m-title" style="margin:0; color:var(--gold); line-height:1;">--</h2>
                 <button onclick="closeModal()" style="background:none; border:none; color:red; font-size:2rem;">X</button>
             </div>
-            <div id="m-code" style="color:var(--gray); margin-bottom:15px;">CODE</div>
+            <div id="m-code" style="color:var(--gray); margin-bottom:15px;">--</div>
             <div id="m-content"></div>
         </div>
     </div>
 
     <div id="navbar" class="nav" style="display:none;">
-        <button class="nav-btn active" onclick="switchTab('view-map', this)">
-            🗺️<span>MAPA</span>
-        </button>
-        <button class="nav-btn" onclick="switchTab('view-active', this)">
-            ⚔️<span>MISIONES</span>
-        </button>
-        <button class="nav-btn" onclick="switchTab('view-trophies', this)">
-            🏆<span>TROFEOS</span>
-        </button>
+        <button class="nav-btn active" onclick="switchTab('view-map', this)">🗺️<span>MAPA</span></button>
+        <button class="nav-btn" onclick="switchTab('view-active', this)">⚔️<span>MISIONES</span></button>
+        <button class="nav-btn" onclick="switchTab('view-trophies', this)">🏆<span>TROFEOS</span></button>
     </div>
 
 <script>
-    // --- BASE DE DATOS ---
+    /* --- BASE DE DATOS Y VARIABLES --- */
+    const STORAGE_KEY = "Pharmacy_RPG_FINAL_v1"; // CAMBIADA PARA FORZAR LOGIN
     const curriculum = [
-        // SEM 1
         {id:'DQUI1045', n:'Química General', s:1, req:[]},
         {id:'DBIO1091', n:'Biología Celular', s:1, req:[]},
         {id:'DCEX0002', n:'Matemática', s:1, req:[]},
         {id:'FORI0001', n:'Antropología', s:1, req:[]},
         {id:'QYFAA001', n:'Intro. Cs. Farmacéuticas', s:1, req:[]},
         {id:'QYFAA002', n:'Psicología General', s:1, req:[]},
-        // SEM 2
         {id:'DQUI1046', n:'Química Inorgánica', s:2, req:['DQUI1045']},
         {id:'DCEX0003', n:'Cálculo Diferencial', s:2, req:['DCEX0002']},
         {id:'DCE0010', n:'Física', s:2, req:['DCEX0002']},
         {id:'DCEX0005', n:'Bioestadística', s:2, req:['DCEX0002']},
         {id:'QYFAB001', n:'Fund. Quehacer Farm.', s:2, req:['QYFAA001']},
         {id:'FORI0002', n:'Ética', s:2, req:['FORI0001']},
-        // SEM 3
         {id:'DSPU0012', n:'Epidemiología y SP', s:3, req:['DCEX0005']},
         {id:'DQUI1047', n:'Química Analítica', s:3, req:['DQUI1046']},
         {id:'DQUI1052', n:'Química Orgánica', s:3, req:['DQUI1046']},
         {id:'DQUI1053', n:'Fisicoquímica', s:3, req:['DCE0010']}, 
         {id:'DBIO1085', n:'Fisiología Humana', s:3, req:['DBIO1091']},
-        // SEM 4
         {id:'DSPU0014', n:'Salud Pública', s:4, req:['DSPU0012']},
         {id:'DQUI1054', n:'Análisis Instrumental', s:4, req:['DQUI1047']},
         {id:'DQUI1055', n:'Química Orgánica Avanzada', s:4, req:['DQUI1052']},
         {id:'DBIO1094', n:'Bioquímica General', s:4, req:['DQUI1052']},
         {id:'DMOR0019', n:'Fisiopatología', s:4, req:['DBIO1085']},
-        // SEM 5
         {id:'DBIO1097', n:'Farmacología I', s:5, req:['DMOR0019','DBIO1094']},
         {id:'QYFAE001', n:'Tecnología Farm. I', s:5, req:['DQUI1053']},
         {id:'QYFAE002', n:'Química Farm. I', s:5, req:['DQUI1055']},
         {id:'DBIO1095', n:'Microbiología Gral', s:5, req:['DBIO1094']},
         {id:'FALU0001', n:'Salud Digital', s:5, req:[]}, 
         {id:'FORI0003', n:'Persona y Sociedad', s:5, req:['FORI0002']},
-        // SEM 6
         {id:'DBIO1096', n:'Farmacología II', s:6, req:['DBIO1097']},
         {id:'QYFAF001', n:'Tecnología Farm. II', s:6, req:['QYFAE001']},
         {id:'QYFAF002', n:'Química Farm. II', s:6, req:['QYFAE002']},
         {id:'DBIO0002', n:'Bioética', s:6, req:['FORI0002']},
         {id:'ELECT001', n:'Electivo I', s:6, req:[]},
-        // SEM 7
         {id:'QYFAG003', n:'Farmacia Clínica I', s:7, req:['DBIO1096']},
         {id:'QYFAG002', n:'Farmacognosia', s:7, req:['DBIO1094']},
         {id:'QYFAH001', n:'Control de Calidad', s:7, req:['DQUI1054','QYFAE001']},
         {id:'QYFAH002', n:'Legislación Farm.', s:7, req:['QYFAE001']},
         {id:'QYFAG001', n:'Práctica I', s:7, req:['QYFAE001']},
         {id:'DSPU0011', n:'Metodología Invest.', s:7, req:['DCEX0005']},
-        // SEM 8
         {id:'QYFAH003', n:'Farmacia Clínica II', s:8, req:['QYFAG003']},
         {id:'QYFAH005', n:'Biofarmacia', s:8, req:['QYFAF001','DBIO1096']},
         {id:'QYFAH006', n:'Toxicología', s:8, req:['DBIO1096','DBIO1094']},
         {id:'QYFAH004', n:'Farmacia Asistencial', s:8, req:['QYFAG003']},
         {id:'QYFAH007', n:'Hito Integrativo', s:8, req:['QYFAF001']}, 
-        // SEM 9
         {id:'QYFAJ001', n:'Gestión y Marketing', s:9, req:['QYFAH004']},
         {id:'QYFAJ002', n:'Farmacovigilancia', s:9, req:['QYFAG003']},
         {id:'ELECP001', n:'Electivo Profesional I', s:9, req:['QYFAH003']}, 
-        // SEM 10
         {id:'QYFAK003', n:'Práctica II (Comunitaria)', s:10, req:['QYFAG001','QYFAH004']},
         {id:'QYFAK001', n:'Internado', s:10, req:[]}
     ];
 
     const achievementsDB = [
         {id:'t1', icon:'👶', title:'PRIMEROS PASOS', desc:'Aprueba tu primer ramo'},
-        {id:'t2', icon:'⚖️', title:'POR UN PELO', desc:'Aprueba con promedio entre 3.95 y 4.0'},
-        {id:'t3', icon:'🤓', title:'CEREBRITO', desc:'Obtén un promedio 7.0'},
-        {id:'t4', icon:'💻', title:'HACKER', desc:'Usa la consola de trucos con éxito'},
-        {id:'t5', icon:'🔥', title:'MITAD DEL CAMINO', desc:'Completa el 5to Semestre'},
-        {id:'t6', icon:'👑', title:'FARMACÉUTICO', desc:'Completa toda la malla'}
+        {id:'t2', icon:'⚖️', title:'POR UN PELO', desc:'Aprueba con 3.95 - 4.0'},
+        {id:'t3', icon:'🤓', title:'CEREBRITO', desc:'Promedio 7.0'},
+        {id:'t4', icon:'💻', title:'HACKER', desc:'Usa el cheat code'},
+        {id:'t5', icon:'🔥', title:'MITAD DEL CAMINO', desc:'Llega a 5to año'},
+        {id:'t6', icon:'👑', title:'LEYENDA', desc:'Completa la malla'}
     ];
 
-    // --- STATE ---
-    let player = {
-        name: "Player",
-        passed: [],
-        current: [],
-        grades: {},
-        trophies: [] // ids unlocked
-    };
+    let player = { name: "Player", passed: [], current: [], grades: {}, trophies: [] };
 
-    // --- CORE ---
-    function init() {
-        const save = localStorage.getItem('pharmacyRPG_ULTIMATE');
-        if (save) {
-            player = JSON.parse(save);
-            startGame();
+    /* --- SISTEMA DE DIÁLOGO PERSONALIZADO (NO ALERT) --- */
+    function showDialog(msg, callbackYes = null) {
+        const overlay = document.getElementById('dialog-overlay');
+        const text = document.getElementById('dialog-text');
+        const btns = document.getElementById('dialog-buttons');
+        
+        text.innerText = msg;
+        btns.innerHTML = ''; // Limpiar botones viejos
+
+        if(callbackYes) {
+            // MODO CONFIRM (SI / NO)
+            const btnYes = document.createElement('button');
+            btnYes.className = 'd-btn d-yes';
+            btnYes.innerText = "SI";
+            btnYes.onclick = () => { overlay.style.display = 'none'; callbackYes(); };
+            
+            const btnNo = document.createElement('button');
+            btnNo.className = 'd-btn d-no';
+            btnNo.innerText = "NO";
+            btnNo.onclick = () => { overlay.style.display = 'none'; };
+
+            btns.appendChild(btnYes);
+            btns.appendChild(btnNo);
         } else {
-            document.getElementById('screen-welcome').classList.add('active');
+            // MODO ALERT (OK)
+            const btnOk = document.createElement('button');
+            btnOk.className = 'd-btn d-yes';
+            btnOk.innerText = "ENTENDIDO";
+            btnOk.onclick = () => { overlay.style.display = 'none'; };
+            btns.appendChild(btnOk);
+        }
+        overlay.style.display = 'flex';
+    }
+
+    /* --- CORE FUNCTIONS --- */
+    function init() {
+        const save = localStorage.getItem(STORAGE_KEY);
+        if(save) {
+            player = JSON.parse(save);
+            launchGame();
+        } else {
+            // Si no hay save, se queda en Welcome Screen
+            document.getElementById('screen-welcome').style.display = 'flex';
         }
     }
 
     function createProfile() {
         const name = document.getElementById('player-name').value.trim();
-        if (!name) return alert("INGRESA UN NOMBRE");
+        if(!name) return showDialog("¡DEBES ESCRIBIR UN NOMBRE!");
         player.name = name.toUpperCase();
         saveGame();
-        startGame();
+        launchGame();
     }
 
-    function startGame() {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    function launchGame() {
         document.getElementById('screen-welcome').style.display = 'none';
-        document.getElementById('screen-game').classList.add('active');
+        document.getElementById('screen-game').style.display = 'block'; // Mostrar juego
         document.getElementById('navbar').style.display = 'flex';
-        
         document.getElementById('hud-player').innerText = player.name;
-        updateStats();
-        renderMap();
-        renderActive();
-        renderTrophies();
+        updateUI();
     }
 
     function saveGame() {
-        localStorage.setItem('pharmacyRPG_ULTIMATE', JSON.stringify(player));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(player));
         updateStats();
     }
 
-    // --- STATS & RANKS ---
-    function updateStats() {
-        const total = curriculum.length;
-        const passed = player.passed.length;
-        const pct = Math.floor((passed / total) * 100);
-        
-        document.getElementById('xp-bar').style.width = pct + '%';
-        document.getElementById('xp-text').innerText = pct + '% COMPLETADO';
+    function updateUI() {
+        renderMap();
+        renderActive();
+        renderTrophies();
+        updateStats();
+    }
 
+    function updateStats() {
+        const pct = Math.floor((player.passed.length / curriculum.length) * 100);
+        document.getElementById('xp-bar').style.width = pct + '%';
+        
         let rank = "NOVATO";
         if(pct > 10) rank = "APRENDIZ";
-        if(pct > 30) rank = "ASISTENTE";
-        if(pct > 50) rank = "QUÍMICO";
-        if(pct > 80) rank = "EXPERTO";
+        if(pct > 30) rank = "QUÍMICO";
+        if(pct > 60) rank = "EXPERTO";
         if(pct == 100) rank = "LEYENDA";
-        
         document.getElementById('hud-rank').innerText = rank;
 
-        checkAchievements();
+        checkTrophies();
     }
 
-    // --- ACHIEVEMENT SYSTEM ---
-    function checkAchievements() {
-        const unlock = (id) => {
-            if(!player.trophies.includes(id)) {
-                player.trophies.push(id);
-                const t = achievementsDB.find(x => x.id === id);
-                showToast(t.title);
-                saveGame(); // Save unlock
-                renderTrophies();
-            }
-        };
-
-        // T1: Primer Ramo
-        if(player.passed.length > 0) unlock('t1');
-        
-        // T6: Completado
-        if(player.passed.length === curriculum.length) unlock('t6');
-
-        // T5: Sem 5 (Aproximado por cantidad)
-        if(player.passed.length >= 30) unlock('t5');
-    }
-
-    function showToast(msg) {
-        const t = document.getElementById('toast');
-        document.getElementById('toast-msg').innerText = msg;
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 3000);
-    }
-
-    function renderTrophies() {
-        const grid = document.getElementById('trophy-list');
-        grid.innerHTML = '';
-        achievementsDB.forEach(t => {
-            const isUnlocked = player.trophies.includes(t.id);
-            grid.innerHTML += `
-                <div class="trophy-card ${isUnlocked ? 'unlocked' : ''} pixel-border">
-                    <div class="t-icon">${t.icon}</div>
-                    <div class="t-name">${isUnlocked ? t.title : '???'}</div>
-                    <div class="t-desc">${t.desc}</div>
-                </div>
-            `;
-        });
-    }
-
-    // --- MAP SYSTEM ---
+    /* --- GAMEPLAY --- */
     function renderMap() {
-        const container = document.getElementById('curriculum-container');
-        container.innerHTML = '';
-        const sems = {};
-        curriculum.forEach(c => { if(!sems[c.s]) sems[c.s]=[]; sems[c.s].push(c); });
-
+        const c = document.getElementById('curriculum-container'); c.innerHTML = '';
+        const sems = {}; curriculum.forEach(x=>{if(!sems[x.s])sems[x.s]=[];sems[x.s].push(x)});
+        
         for(let i=1; i<=10; i++) {
             if(!sems[i]) continue;
-            const block = document.createElement('div');
-            block.className = 'semester-block';
-            block.innerHTML = `<div class="sem-header">> NIVEL ${i}</div>`;
+            const b = document.createElement('div'); b.className='semester-block';
+            b.innerHTML = `<div class="sem-header">> NIVEL ${i}</div>`;
             sems[i].forEach(sub => {
-                const isPassed = player.passed.includes(sub.id);
-                const isActive = player.current.includes(sub.id);
-                const missing = sub.req.filter(r => !player.passed.includes(r));
-                const isLocked = missing.length > 0 && !isPassed && !isActive;
+                const p = player.passed.includes(sub.id);
+                const a = player.current.includes(sub.id);
+                const missing = sub.req.filter(r=>!player.passed.includes(r));
+                const l = missing.length>0 && !p && !a;
                 
-                let cl = '', ic = '🔹';
-                if(isPassed) { cl='passed'; ic='🏆'; }
-                else if(isActive) { cl='active'; ic='⚔️'; }
-                else if(isLocked) { cl='locked'; ic='🔒'; }
-                else ic='✨';
-
-                block.innerHTML += `
-                    <div class="quest-card ${cl} pixel-border" onclick="openModal('${sub.id}', ${isLocked}, '${missing.join(', ')}')">
-                        <div class="status-icon">${ic}</div>
-                        <div>
-                            <div style="font-weight:bold;">${sub.n}</div>
-                            <div class="quest-code">${sub.id}</div>
-                        </div>
-                    </div>`;
+                let cl='', ic='🔹';
+                if(p){cl='passed';ic='🏆'} else if(a){cl='active';ic='⚔️'} else if(l){cl='locked';ic='🔒'} else ic='✨';
+                
+                b.innerHTML += `<div class="quest-card ${cl} pixel-border" onclick="openModal('${sub.id}', ${l}, '${missing}')">
+                    <div class="status-icon">${ic}</div>
+                    <div><div style="font-weight:bold;">${sub.n}</div><div class="quest-code">${sub.id}</div></div>
+                </div>`;
             });
-            container.appendChild(block);
+            c.appendChild(b);
         }
     }
 
-    // --- MODAL & LOGIC ---
     let activeId = null;
-
-    function openModal(id, isLocked, missing) {
+    function openModal(id, locked, missing) {
         activeId = id;
-        const sub = curriculum.find(c=>c.id===id);
-        const isPassed = player.passed.includes(id);
-        const isActive = player.current.includes(id);
+        const sub = curriculum.find(x=>x.id===id);
+        const p = player.passed.includes(id);
+        const a = player.current.includes(id);
         
-        document.getElementById('modal').style.display = 'flex';
-        document.getElementById('m-title').innerText = sub.
+        document.getElementById('modal').style.display='flex';
+        document.getElementById('m-title').innerText = sub.n;
+        document.getElementById('m-code').innerText = id;
+        const content = document.getElementById('m-content');
+        content.innerHTML = '';
+
+        if(p) {
+            content.innerHTML = `<h3 style="color:var(--green)">¡MISION COMPLETADA!</h3><button class="btn" onclick="askResetSubject('${id}')">REINICIAR</button>`;
+        } else if(a) {
+            renderGrades(content, id);
+        } else if(locked) {
+            content.innerHTML = `<div style="color:var(--red); margin-bottom:10px;">BLOQUEADO<br>REQ: ${missing}</div>
+            <div style="border:1px dashed #555; padding:10px;">
+                <div style="color:var(--blue); font-size:0.8rem;">CONSOLE</div>
+                <input id="cheat" class="rpg-input" placeholder="PASSWORD..." style="font-size:1rem;">
+                <button class="btn btn-green" style="padding:5px;" onclick="tryCheat('${id}')">EJECUTAR</button>
+            </div>`;
+        } else {
+            content.innerHTML = `<button class="btn btn-green" onclick="enroll('${id}')">ACEPTAR MISION</button>`;
+        }
+    }
+
+    function closeModal() { document.getElementById('modal').style.display='none'; updateUI(); }
+    
+    function enroll(id) {
+        if(!player.current.includes(id)) player.current.push(id);
+        saveGame(); closeModal();
+    }
+
+    function askResetSubject(id) {
+        showDialog("¿Reiniciar esta misión? Perderás el progreso.", () => {
+            player.passed = player.passed.filter(x=>x!==id);
+            saveGame(); closeModal();
+        });
+    }
+
+    function tryCheat(id) {
+        const val = document.getElementById('cheat').value.trim().toUpperCase();
+        if(val==='OPENSESAME' || val==='HESOYAM') {
+            showDialog("CHEAT ACTIVADO: ACCESO CONCEDIDO");
+            enroll(id);
+            if(!player.trophies.includes('t4')) { player.trophies.push('t4'); showToast("HACKER"); saveGame(); }
+        } else {
+            showDialog("ACCESO DENEGADO");
+        }
+    }
+
+    function renderGrades(con, id) {
+        const grades = player.grades[id]||[];
+        let sum=0; grades.forEach(g=>sum+=parseFloat(g.g)*(parseFloat(g.w)/100));
+        const avg=sum.toFixed(2);
+        
+        con.innerHTML = `
+            <div style="border:2px solid white; height:20px; position:relative; margin-bottom:10px;">
+                <div style="background:${avg>=3.95? 'var(--green)':'var(--red)'}; width:${Math.min(100,(avg/7)*100)}%; height:100%;"></div>
+                <div style="position:absolute; top:0; width:100%; font-size:0.8rem;">HP: ${avg}</div>
+            </div>
+            <div id="glist" style="margin-bottom:10px;"></div>
+            <div style="display:flex; gap:5px;">
+                <input id="gn" placeholder="Item" style="width:40%; background:black; color:white; border:1px solid gray;">
+                <input id="gg" type="number" placeholder="Note" style="width:20%; background:black; color:white; border:1px solid gray;">
+                <input id="gw" type="number" placeholder="%" style="width:20%; background:black; color:white; border:1px solid gray;">
+                <button onclick="addGrade('${id}')" style="background:var(--blue); color:white; border:none;">+</button>
+            </div>
+            <button class="btn btn-red" onclick="askDrop('${id}')">ABANDONAR</button>
+        `;
+        const list = con.querySelector('#glist');
+        grades.forEach((g,i) => {
+            list.innerHTML+=`<div style="display:flex; justify-content:space-between; border-bottom:1px solid #333;">
+                <span>${g.n}</span> <span>${g.g} (${g.w}%)</span> <span style="color:red;" onclick="delGrade('${id}',${i})">x</span>
+            </div>`;
+        });
+    }
+
+    function addGrade(id) {
+        const n=document.getElementById('gn').value, g=document.getElementById('gg').value, w=document.getElementById('gw').value;
+        if(n&&g&&w) {
+            if(!player.grades[id]) player.grades[id]=[];
+            player.grades[id].push({n,g,w});
+            if(parseFloat(g)===7.0 && !player.trophies.includes('t3')) { player.trophies.push('t3'); showToast("CEREBRITO"); }
+            saveGame(); renderGrades(document.getElementById('m-content'), id);
+        }
+    }
+    function delGrade(id,i) { player.grades[id].splice(i,1); saveGame(); renderGrades(document.getElementById('m-content'), id); }
+    
+    function askDrop(id) {
+        showDialog("¿Abandonar misión? Se borrarán las notas.", () => {
+            player.current = player.current.filter(x=>x!==id);
+            delete player.grades[id];
+            saveGame(); closeModal();
+        });
+    }
+
+    /* --- ACTIVE & FINISH --- */
+    function renderActive() {
+        const d = document.getElementById('active-list'); d.innerHTML='';
+        if(player.current.length===0) return d.innerHTML='<p style="text-align:center; color:gray;">SIN MISIONES</p>';
+        player.current.forEach(id => {
+            const sub = curriculum.find(x=>x.id===id);
+            const grades = player.grades[id]||[];
+            let sum=0; grades.forEach(g=>sum+=parseFloat(g.g)*(parseFloat(g.w)/100));
+            const avg=sum.toFixed(2);
+            d.innerHTML += `<div class="quest-card active pixel-border" onclick="openModal('${id}', false, '')">
+                <div class="status-icon">⚔️</div>
+                <div style="flex:1;"><div>${sub.n}</div><div style="color:${avg>=3.95?'var(--green)':'var(--red)'}">HP: ${avg}</div></div>
+            </div>`;
+        });
+    }
+
+    function askFinishSemester() {
+        showDialog("¿CERRAR SEMESTRE? (Aprobación con 3.95)", () => {
+            const passedNow = [];
+            player.current.forEach(id => {
+                const grades = player.grades[id]||[];
+                let sum=0; grades.forEach(g=>sum+=parseFloat(g.g)*(parseFloat(g.w)/100));
+                if(sum >= 3.95) {
+                    passedNow.push(id);
+                    if(sum>=3.95 && sum<=4.0 && !player.trophies.includes('t2')) { player.trophies.push('t2'); showToast("POR UN PELO"); }
+                }
+            });
+            player.passed = [...player.passed, ...passedNow];
+            player.current = [];
+            saveGame();
+            showDialog(`RESULTADO: ${passedNow.length} MISIONES COMPLETADAS.`);
+            switchTab('view-map', document.querySelectorAll('.nav-btn')[0]);
+            updateUI();
+        });
+    }
+
+    function askHardReset() {
+        showDialog("¿BORRAR TODO EL PROGRESO? (Irreversible)", () => {
+            localStorage.removeItem(STORAGE_KEY);
+            location.reload();
+        });
+    }
+
+    /* --- SYSTEM UTILS --- */
+    function renderTrophies() {
+        const g = document.getElementById('trophy-list'); g.innerHTML='';
+        achievementsDB.forEach(t => {
+            const u = player.trophies.includes(t.id);
+            g.innerHTML += `<div class="trophy-card ${u?'unlocked':''} pixel-border">
+                <div style="font-size:2rem;">${t.icon}</div>
+                <div style="color:var(--gold); font-weight:bold;">${u?t.title:'???'}</div>
+                <div style="font-size:0.8
