@@ -24,6 +24,7 @@
             background: var(--bg); color: var(--text);
             font-family: 'VT323', monospace; font-size: 20px;
             padding-bottom: 90px;
+            overflow-x: hidden;
         }
 
         /* --- UI ELEMENTS --- */
@@ -37,18 +38,18 @@
             text-transform: uppercase; cursor: pointer; width: 100%; display: block; margin-top: 10px;
         }
         .btn:active { transform: scale(0.98); }
-        .btn-red { background: var(--red); }
-        .btn-green { background: var(--green); }
+        .btn-red { background: var(--red); color: white; }
+        .btn-green { background: var(--green); color: black; }
 
         /* --- SCREENS --- */
-        .screen { display: none; height: 100vh; width: 100%; }
-        .screen.active { display: flex; flex-direction: column; }
+        .screen { display: none; min-height: 100vh; width: 100%; }
         
         /* WELCOME */
         #screen-welcome {
+            display: flex; flex-direction: column;
             justify-content: center; align-items: center; text-align: center;
             background: radial-gradient(circle, #2a2a35 0%, #000000 100%);
-            position: absolute; top: 0; left: 0; z-index: 200;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 999;
         }
         input.rpg-input {
             background: #000; color: var(--green); border: 2px solid white;
@@ -63,7 +64,8 @@
         .xp-track { width: 100%; height: 16px; background: #333; border: 2px solid white; position: relative; margin-top:5px; }
         .xp-fill { height: 100%; background: linear-gradient(90deg, var(--blue), #bd93f9); width: 0%; transition: width 0.5s; }
         
-        .view-content { display: none; padding: 15px; }
+        .view-content { display: none; padding: 15px; padding-bottom: 100px; }
+        .view-content.active { display: block; }
         
         /* QUEST CARDS */
         .semester-block { margin-bottom: 25px; }
@@ -88,7 +90,7 @@
             box-shadow: 0 0 30px rgba(255,255,255,0.1); text-align: center;
         }
 
-        /* DIALOGO PERSONALIZADO (REEMPLAZO ALERT) */
+        /* DIALOGO PERSONALIZADO */
         #dialog-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.8); z-index: 300;
@@ -139,20 +141,19 @@
 
     <div id="dialog-overlay">
         <div class="dialog-box">
-            <div id="dialog-text" class="dialog-msg">MENSAJE DEL SISTEMA</div>
-            <div id="dialog-buttons" class="dialog-btns">
-                </div>
+            <div id="dialog-text" class="dialog-msg">MENSAJE</div>
+            <div id="dialog-buttons" class="dialog-btns"></div>
         </div>
     </div>
 
-    <div id="screen-welcome" class="screen active">
-        <h1 style="color:var(--gold); font-size:3.5rem; line-height:0.8; margin-bottom:20px;">
-            PHARMACY<br><span style="color:white; font-size:2rem;">RPG FINAL</span>
+    <div id="screen-welcome">
+        <h1 style="color:var(--gold); font-size:3rem; line-height:1; margin-bottom:20px;">
+            PHARMACY<br><span style="color:white; font-size:2rem;">RPG</span>
         </h1>
         <div style="width:80%; max-width:300px;">
-            <p style="color:var(--gray);">INGRESE CREDENCIALES</p>
-            <input type="text" id="player-name" class="rpg-input" placeholder="TU NOMBRE">
-            <button class="btn btn-green" onclick="createProfile()">START GAME</button>
+            <p style="color:var(--gray); margin-bottom:5px;">CREA TU USUARIO:</p>
+            <input type="text" id="player-name" class="rpg-input" placeholder="Escribe tu nombre...">
+            <button class="btn btn-green" onclick="createProfile()">COMENZAR PARTIDA</button>
         </div>
     </div>
 
@@ -168,9 +169,9 @@
             </div>
         </div>
 
-        <div id="view-map" class="view-content" style="display:block;">
+        <div id="view-map" class="view-content active">
             <br><div id="curriculum-container"></div><br>
-            <button onclick="askHardReset()" style="background:none; border:none; color:#444; width:100%; padding:20px;">[BORRAR PARTIDA]</button>
+            <button onclick="askHardReset()" style="background:none; border:none; color:#444; width:100%; padding:20px; font-family:inherit;">[BORRAR PARTIDA]</button>
         </div>
 
         <div id="view-active" class="view-content">
@@ -203,8 +204,8 @@
     </div>
 
 <script>
-    /* --- BASE DE DATOS Y VARIABLES --- */
-    const STORAGE_KEY = "Pharmacy_RPG_FINAL_v1"; // CAMBIADA PARA FORZAR LOGIN
+    /* --- CONFIG --- */
+    const STORAGE_KEY = "Pharmacy_RPG_Clean_v1"; 
     const curriculum = [
         {id:'DQUI1045', n:'Química General', s:1, req:[]},
         {id:'DBIO1091', n:'Biología Celular', s:1, req:[]},
@@ -268,55 +269,20 @@
 
     let player = { name: "Player", passed: [], current: [], grades: {}, trophies: [] };
 
-    /* --- SISTEMA DE DIÁLOGO PERSONALIZADO (NO ALERT) --- */
-    function showDialog(msg, callbackYes = null) {
-        const overlay = document.getElementById('dialog-overlay');
-        const text = document.getElementById('dialog-text');
-        const btns = document.getElementById('dialog-buttons');
-        
-        text.innerText = msg;
-        btns.innerHTML = ''; // Limpiar botones viejos
-
-        if(callbackYes) {
-            // MODO CONFIRM (SI / NO)
-            const btnYes = document.createElement('button');
-            btnYes.className = 'd-btn d-yes';
-            btnYes.innerText = "SI";
-            btnYes.onclick = () => { overlay.style.display = 'none'; callbackYes(); };
-            
-            const btnNo = document.createElement('button');
-            btnNo.className = 'd-btn d-no';
-            btnNo.innerText = "NO";
-            btnNo.onclick = () => { overlay.style.display = 'none'; };
-
-            btns.appendChild(btnYes);
-            btns.appendChild(btnNo);
-        } else {
-            // MODO ALERT (OK)
-            const btnOk = document.createElement('button');
-            btnOk.className = 'd-btn d-yes';
-            btnOk.innerText = "ENTENDIDO";
-            btnOk.onclick = () => { overlay.style.display = 'none'; };
-            btns.appendChild(btnOk);
-        }
-        overlay.style.display = 'flex';
-    }
-
-    /* --- CORE FUNCTIONS --- */
-    function init() {
+    // --- INIT & LOGIN ---
+    window.onload = function() {
         const save = localStorage.getItem(STORAGE_KEY);
         if(save) {
             player = JSON.parse(save);
             launchGame();
         } else {
-            // Si no hay save, se queda en Welcome Screen
             document.getElementById('screen-welcome').style.display = 'flex';
         }
-    }
+    };
 
     function createProfile() {
         const name = document.getElementById('player-name').value.trim();
-        if(!name) return showDialog("¡DEBES ESCRIBIR UN NOMBRE!");
+        if(!name) return showDialog("¡POR FAVOR ESCRIBE UN NOMBRE!");
         player.name = name.toUpperCase();
         saveGame();
         launchGame();
@@ -324,7 +290,7 @@
 
     function launchGame() {
         document.getElementById('screen-welcome').style.display = 'none';
-        document.getElementById('screen-game').style.display = 'block'; // Mostrar juego
+        document.getElementById('screen-game').style.display = 'block';
         document.getElementById('navbar').style.display = 'flex';
         document.getElementById('hud-player').innerText = player.name;
         updateUI();
@@ -336,10 +302,7 @@
     }
 
     function updateUI() {
-        renderMap();
-        renderActive();
-        renderTrophies();
-        updateStats();
+        renderMap(); renderActive(); renderTrophies(); updateStats();
     }
 
     function updateStats() {
@@ -352,11 +315,39 @@
         if(pct > 60) rank = "EXPERTO";
         if(pct == 100) rank = "LEYENDA";
         document.getElementById('hud-rank').innerText = rank;
-
         checkTrophies();
     }
 
-    /* --- GAMEPLAY --- */
+    // --- DIALOG SYSTEM ---
+    function showDialog(msg, callbackYes = null) {
+        const overlay = document.getElementById('dialog-overlay');
+        const text = document.getElementById('dialog-text');
+        const btns = document.getElementById('dialog-buttons');
+        
+        text.innerText = msg;
+        btns.innerHTML = '';
+
+        if(callbackYes) {
+            const btnYes = document.createElement('button');
+            btnYes.className = 'd-btn d-yes';
+            btnYes.innerText = "SI";
+            btnYes.onclick = () => { overlay.style.display = 'none'; callbackYes(); };
+            const btnNo = document.createElement('button');
+            btnNo.className = 'd-btn d-no';
+            btnNo.innerText = "NO";
+            btnNo.onclick = () => { overlay.style.display = 'none'; };
+            btns.appendChild(btnYes); btns.appendChild(btnNo);
+        } else {
+            const btnOk = document.createElement('button');
+            btnOk.className = 'd-btn d-yes';
+            btnOk.innerText = "OK";
+            btnOk.onclick = () => { overlay.style.display = 'none'; };
+            btns.appendChild(btnOk);
+        }
+        overlay.style.display = 'flex';
+    }
+
+    // --- MAIN LOGIC ---
     function renderMap() {
         const c = document.getElementById('curriculum-container'); c.innerHTML = '';
         const sems = {}; curriculum.forEach(x=>{if(!sems[x.s])sems[x.s]=[];sems[x.s].push(x)});
@@ -370,7 +361,6 @@
                 const a = player.current.includes(sub.id);
                 const missing = sub.req.filter(r=>!player.passed.includes(r));
                 const l = missing.length>0 && !p && !a;
-                
                 let cl='', ic='🔹';
                 if(p){cl='passed';ic='🏆'} else if(a){cl='active';ic='⚔️'} else if(l){cl='locked';ic='🔒'} else ic='✨';
                 
@@ -403,7 +393,7 @@
         } else if(locked) {
             content.innerHTML = `<div style="color:var(--red); margin-bottom:10px;">BLOQUEADO<br>REQ: ${missing}</div>
             <div style="border:1px dashed #555; padding:10px;">
-                <div style="color:var(--blue); font-size:0.8rem;">CONSOLE</div>
+                <div style="color:var(--blue); font-size:0.8rem;">CONSOLA DE TRUCOS</div>
                 <input id="cheat" class="rpg-input" placeholder="PASSWORD..." style="font-size:1rem;">
                 <button class="btn btn-green" style="padding:5px;" onclick="tryCheat('${id}')">EJECUTAR</button>
             </div>`;
@@ -413,19 +403,12 @@
     }
 
     function closeModal() { document.getElementById('modal').style.display='none'; updateUI(); }
-    
-    function enroll(id) {
-        if(!player.current.includes(id)) player.current.push(id);
-        saveGame(); closeModal();
-    }
-
+    function enroll(id) { if(!player.current.includes(id)) player.current.push(id); saveGame(); closeModal(); }
     function askResetSubject(id) {
         showDialog("¿Reiniciar esta misión? Perderás el progreso.", () => {
-            player.passed = player.passed.filter(x=>x!==id);
-            saveGame(); closeModal();
+            player.passed = player.passed.filter(x=>x!==id); saveGame(); closeModal();
         });
     }
-
     function tryCheat(id) {
         const val = document.getElementById('cheat').value.trim().toUpperCase();
         if(val==='OPENSESAME' || val==='HESOYAM') {
@@ -450,7 +433,7 @@
             <div id="glist" style="margin-bottom:10px;"></div>
             <div style="display:flex; gap:5px;">
                 <input id="gn" placeholder="Item" style="width:40%; background:black; color:white; border:1px solid gray;">
-                <input id="gg" type="number" placeholder="Note" style="width:20%; background:black; color:white; border:1px solid gray;">
+                <input id="gg" type="number" placeholder="Nota" style="width:20%; background:black; color:white; border:1px solid gray;">
                 <input id="gw" type="number" placeholder="%" style="width:20%; background:black; color:white; border:1px solid gray;">
                 <button onclick="addGrade('${id}')" style="background:var(--blue); color:white; border:none;">+</button>
             </div>
@@ -474,16 +457,12 @@
         }
     }
     function delGrade(id,i) { player.grades[id].splice(i,1); saveGame(); renderGrades(document.getElementById('m-content'), id); }
-    
     function askDrop(id) {
         showDialog("¿Abandonar misión? Se borrarán las notas.", () => {
-            player.current = player.current.filter(x=>x!==id);
-            delete player.grades[id];
-            saveGame(); closeModal();
+            player.current = player.current.filter(x=>x!==id); delete player.grades[id]; saveGame(); closeModal();
         });
     }
 
-    /* --- ACTIVE & FINISH --- */
     function renderActive() {
         const d = document.getElementById('active-list'); d.innerHTML='';
         if(player.current.length===0) return d.innerHTML='<p style="text-align:center; color:gray;">SIN MISIONES</p>';
@@ -510,23 +489,19 @@
                     if(sum>=3.95 && sum<=4.0 && !player.trophies.includes('t2')) { player.trophies.push('t2'); showToast("POR UN PELO"); }
                 }
             });
-            player.passed = [...player.passed, ...passedNow];
-            player.current = [];
+            player.passed = [...player.passed, ...passedNow]; player.current = [];
             saveGame();
             showDialog(`RESULTADO: ${passedNow.length} MISIONES COMPLETADAS.`);
             switchTab('view-map', document.querySelectorAll('.nav-btn')[0]);
-            updateUI();
         });
     }
 
     function askHardReset() {
         showDialog("¿BORRAR TODO EL PROGRESO? (Irreversible)", () => {
-            localStorage.removeItem(STORAGE_KEY);
-            location.reload();
+            localStorage.removeItem(STORAGE_KEY); location.reload();
         });
     }
 
-    /* --- SYSTEM UTILS --- */
     function renderTrophies() {
         const g = document.getElementById('trophy-list'); g.innerHTML='';
         achievementsDB.forEach(t => {
@@ -534,4 +509,25 @@
             g.innerHTML += `<div class="trophy-card ${u?'unlocked':''} pixel-border">
                 <div style="font-size:2rem;">${t.icon}</div>
                 <div style="color:var(--gold); font-weight:bold;">${u?t.title:'???'}</div>
-                <div style="font-size:0.8
+                <div style="font-size:0.8rem; color:#aaa;">${t.desc}</div>
+            </div>`;
+        });
+    }
+    function checkTrophies() {
+        if(player.passed.length>0 && !player.trophies.includes('t1')) { player.trophies.push('t1'); showToast("PRIMEROS PASOS"); }
+        if(player.passed.length===curriculum.length && !player.trophies.includes('t6')) { player.trophies.push('t6'); showToast("LEYENDA"); }
+        if(player.passed.length>=30 && !player.trophies.includes('t5')) { player.trophies.push('t5'); showToast("MITAD DEL CAMINO"); }
+    }
+    function showToast(msg) {
+        const t = document.getElementById('toast'); document.getElementById('toast-msg').innerText = msg;
+        t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3000);
+    }
+    function switchTab(id, btn) {
+        document.querySelectorAll('.view-content').forEach(x=>{x.classList.remove('active');x.style.display='none'});
+        document.getElementById(id).style.display='block';
+        document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+</script>
+</body>
+</html>
