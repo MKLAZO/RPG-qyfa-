@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Pharmacy Tycoon RPG</title>
+    <title>Pharmacy Tycoon RPG Fix</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #0f0f13; --panel: #1b1b20;
             --green: #5de668; --red: #ff4d4d; --blue: #4d94ff; --gold: #ffd700;
-            --purple: #d580ff; --gray: #6c6c7d; --text: #eee;
+            --gray: #6c6c7d; --text: #eee;
         }
         * { box-sizing: border-box; outline: none; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--bg); color: var(--text); font-family: 'VT323', monospace; font-size: 20px; padding-bottom: 85px; overflow-x: hidden; }
@@ -19,19 +19,13 @@
         .btn:active { transform: scale(0.98); }
         .btn-green { background: var(--green); } .btn-red { background: var(--red); color: white; }
         .pixel-box { background: var(--panel); border: 2px solid #444; padding: 10px; margin-bottom: 10px; box-shadow: 4px 4px 0 #000; }
-        .rpg-input { background: #000; color: var(--green); border: 2px solid white; padding: 10px; font-family: 'VT323'; font-size: 1.5rem; text-align: center; width: 100%; }
+        .rpg-input { background: #000; color: var(--green); border: 2px solid white; padding: 10px; font-family: 'VT323'; font-size: 1.3rem; text-align: center; width: 100%; margin-bottom: 5px; }
 
         /* PANTALLAS */
         .screen { display: none; min-height: 100vh; width: 100%; padding: 15px; padding-bottom: 100px; }
         
-        /* WELCOME */
-        #screen-welcome {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 999;
-            background: radial-gradient(circle, #1a1a24 0%, #000 100%);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-        }
-        
-        /* SETUP (Checklist inicial) */
+        /* WELCOME & SETUP */
+        #screen-welcome { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 999; background: radial-gradient(circle, #1a1a24 0%, #000 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; }
         #screen-setup { background: var(--bg); }
         .setup-row { display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #333; }
         .setup-chk { transform: scale(1.5); margin-right: 15px; }
@@ -48,17 +42,18 @@
         .quest-card.locked { filter: grayscale(1); opacity: 0.4; }
         .quest-card.active { border-color: var(--blue); background: #16202e; }
 
-        /* SHOP & INVENTORY */
+        /* SHOP */
         .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .item-card { text-align: center; position: relative; }
+        .item-card { text-align: center; }
         .item-icon { font-size: 2.5rem; display: block; margin-bottom: 5px; }
-        .item-price { color: var(--gold); font-size: 0.9rem; }
-        .item-owned { opacity: 0.5; filter: grayscale(0.5); }
         .buy-btn { background: var(--gold); color: black; border: none; padding: 5px; width: 100%; cursor: pointer; font-family: inherit; font-weight: bold; margin-top: 5px; }
 
-        /* MODAL */
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 100; display: none; align-items: center; justify-content: center; }
-        .modal-box { background: var(--panel); width: 90%; max-height: 80vh; border: 2px solid white; padding: 20px; overflow-y: auto; text-align: center; }
+        /* MODAL DE NOTAS (MEJORADO) */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 100; display: none; align-items: center; justify-content: center; }
+        .modal-box { background: var(--panel); width: 95%; max-height: 90vh; border: 2px solid white; padding: 15px; overflow-y: auto; text-align: center; }
+        
+        .grade-form { background: #111; border: 1px dashed #555; padding: 10px; margin-top: 15px; }
+        .grade-list-item { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 8px; margin-bottom: 5px; border-left: 3px solid var(--blue); }
 
         /* NAV */
         .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #000; border-top: 2px solid white; display: flex; height: 60px; z-index: 90; }
@@ -88,7 +83,7 @@
 
     <div id="screen-setup" class="screen">
         <h2 style="color:var(--green); text-align:center;">HISTORIAL ACADÉMICO</h2>
-        <p style="font-size:0.9rem; text-align:center; color:#aaa;">Marca las asignaturas que YA APROBASTE anteriormente. <br>(Ganarás monedas iniciales)</p>
+        <p style="font-size:0.9rem; text-align:center; color:#aaa;">Marca lo que YA APROBASTE para ganar monedas iniciales.</p>
         <div id="setup-list"></div>
         <button class="btn btn-blue" style="position:sticky; bottom:10px;" onclick="finishSetup()">CONFIRMAR Y JUGAR</button>
     </div>
@@ -96,9 +91,7 @@
     <div id="screen-game" class="screen">
         <div class="hud">
             <div id="hud-player">PLAYER</div>
-            <div class="coin-display">
-                <span id="coin-count">0</span> <span>🪙</span>
-            </div>
+            <div class="coin-display"><span id="coin-count">0</span> <span>🪙</span></div>
         </div>
 
         <div id="view-map" style="display:block;">
@@ -113,14 +106,11 @@
         </div>
 
         <div id="view-shop" style="display:none;">
-            <h2 style="color:var(--gold); text-align:center;">PROVEEDOR DE LAB</h2>
-            <div style="text-align:center; margin-bottom:10px; font-size:0.9rem;">Compra equipos con tus notas (>=4.0)</div>
-            
+            <h2 style="color:var(--gold); text-align:center;">PROVEEDOR LAB</h2>
             <div style="display:flex; gap:10px; margin-bottom:10px;">
                 <button onclick="renderShop('all')" class="btn" style="font-size:1rem; padding:5px;">CATÁLOGO</button>
                 <button onclick="renderShop('owned')" class="btn" style="font-size:1rem; padding:5px;">INVENTARIO</button>
             </div>
-
             <div id="shop-grid" class="shop-grid"></div>
         </div>
     </div>
@@ -142,10 +132,9 @@
     </div>
 
 <script>
-    /* CONFIGURACIÓN */
-    const KEY = "PharmTycoon_V1";
+    const KEY = "PharmTycoon_V2_Fix";
     
-    // --- BASE DE DATOS MALLA ---
+    // BASE DE DATOS MALLA
     const curriculum = [
         {id:'DQUI1045', n:'Química General', s:1, req:[]}, {id:'DBIO1091', n:'Biología Celular', s:1, req:[]}, {id:'DCEX0002', n:'Matemática', s:1, req:[]}, {id:'FORI0001', n:'Antropología', s:1, req:[]}, {id:'QYFAA001', n:'Intro. Cs. Farm.', s:1, req:[]}, {id:'QYFAA002', n:'Psicología Gral', s:1, req:[]},
         {id:'DQUI1046', n:'Química Inorg.', s:2, req:['DQUI1045']}, {id:'DCEX0003', n:'Cálculo Dif.', s:2, req:['DCEX0002']}, {id:'DCE0010', n:'Física', s:2, req:['DCEX0002']}, {id:'DCEX0005', n:'Bioestadística', s:2, req:['DCEX0002']}, {id:'QYFAB001', n:'Fund. Quehacer', s:2, req:['QYFAA001']}, {id:'FORI0002', n:'Ética', s:2, req:['FORI0001']},
@@ -159,9 +148,9 @@
         {id:'QYFAK003', n:'Práctica II', s:10, req:['QYFAG001','QYFAH004']}, {id:'QYFAK001', n:'Internado', s:10, req:[]}
     ];
 
-    // --- BASE DE DATOS TIENDA (LABORATORIO) ---
+    // TIENDA
     const shopItems = [
-        {id:1, n:'Tubo de Ensayo', p:50, i:'🧪'}, {id:2, n:'Gradilla', p:80, i:'🪜'}, {id:3, n:'Vaso Precipitado 50ml', p:100, i:'🥃'},
+        {id:1, n:'Tubo de Ensayo', p:50, i:'🧪'}, {id:2, n:'Gradilla', p:80, i:'🪜'}, {id:3, n:'Vaso Precipitado', p:100, i:'🥃'},
         {id:4, n:'Varilla Vidrio', p:120, i:'🥢'}, {id:5, n:'Vidrio Reloj', p:150, i:'💿'}, {id:6, n:'Pipeta Pasteur', p:180, i:'💉'},
         {id:7, n:'Embudo Analítico', p:200, i:'🔽'}, {id:8, n:'Matraz Erlenmeyer', p:250, i:'⚗️'}, {id:9, n:'Espátula', p:300, i:'🥄'},
         {id:10, n:'Piseta', p:350, i:'🚿'}, {id:11, n:'Probeta 100ml', p:400, i:'📏'}, {id:12, n:'Mortero', p:450, i:'🍚'},
@@ -175,11 +164,11 @@
         {id:34, n:'Centrífuga Mesa', p:5000, i:'💫'}, {id:35, n:'Baño María', p:5500, i:'🛁'}, {id:36, n:'Viscosímetro', p:6000, i:'⏳'},
         {id:37, n:'Refractómetro', p:6500, i:'🔭'}, {id:38, n:'Polarímetro', p:7000, i:'👓'}, {id:39, n:'Microscopio Óptico', p:8000, i:'🔬'},
         {id:40, n:'Balanza Analítica', p:10000, i:'⚖️'}, {id:41, n:'Rotavapor', p:12000, i:'🔄'}, {id:42, n:'Estufa Cultivo', p:15000, i:'🥪'},
-        {id:43, n:'Autoclave', p:18000, i:'🚂'}, {id:44, n:'Campana Extracción', p:20000, i:'🛖'}, {id:45, n:'Espectrofotómetro UV', p:25000, i:'🌈'},
+        {id:43, n:'Autoclave', p:18000, i:'🚂'}, {id:44, n:'Campana Extracción', p:20000, i:'🛖'}, {id:45, n:'Espectrofotómetro', p:25000, i:'🌈'},
         {id:46, n:'Equipo Karl Fischer', p:30000, i:'💧'}, {id:47, n:'Disolutor', p:35000, i:'💊'}, {id:48, n:'Durómetro', p:38000, i:'🔨'},
         {id:49, n:'Friabilómetro', p:40000, i:'⚙️'}, {id:50, n:'HPLC Básico', p:50000, i:'📠'}, {id:51, n:'Cromatógrafo Gases', p:60000, i:'⛽'},
         {id:52, n:'Espectrómetro Masas', p:75000, i:'📉'}, {id:53, n:'Absorción Atómica', p:85000, i:'🔥'}, {id:54, n:'RMN 300MHz', p:100000, i:'🧲'},
-        {id:55, n:'Microscopio Electrónico', p:150000, i:'👁️'}, {id:56, n:'Sintetizador ADN', p:200000, i:'🧬'}, {id:57, n:'Lab. Completo', p:500000, i:'🏰'}
+        {id:55, n:'Microscopio Elect.', p:150000, i:'👁️'}, {id:56, n:'Sintetizador ADN', p:200000, i:'🧬'}, {id:57, n:'Lab. Completo', p:500000, i:'🏰'}
     ];
 
     let player = { name: "Player", passed: [], current: [], grades: {}, coins: 0, inventory: [] };
@@ -192,7 +181,7 @@
                 player = JSON.parse(save);
                 launchGame();
             } else {
-                // No hay save, mostrar Welcome
+                // Nuevo usuario
             }
         } catch(e) { console.log(e); }
     };
@@ -201,7 +190,6 @@
         const name = document.getElementById('input-name').value.trim();
         if(!name) { alert("¡Pon tu nombre!"); return; }
         player.name = name.toUpperCase();
-        
         document.getElementById('screen-welcome').style.display = 'none';
         document.getElementById('screen-setup').style.display = 'block';
         renderSetupList();
@@ -210,14 +198,10 @@
     function renderSetupList() {
         const c = document.getElementById('setup-list');
         c.innerHTML = '';
-        
-        // Agrupar por semestre para orden
         for(let i=1; i<=10; i++) {
             const sems = curriculum.filter(x => x.s === i);
             if(sems.length === 0) continue;
-            
             c.innerHTML += `<div style="background:#222; color:var(--blue); padding:5px; margin-top:10px; font-weight:bold;">SEMESTRE ${i}</div>`;
-            
             sems.forEach(sub => {
                 c.innerHTML += `
                     <div class="setup-row">
@@ -231,18 +215,11 @@
     function finishSetup() {
         const chks = document.querySelectorAll('.setup-chk:checked');
         let count = 0;
-        chks.forEach(box => {
-            player.passed.push(box.value);
-            count++;
-        });
-        
-        // Bonus inicial por ramos aprobados
-        const bonus = count * 50; 
+        chks.forEach(box => { player.passed.push(box.value); count++; });
+        const bonus = count * 100; 
         player.coins = bonus;
-        
-        save();
-        launchGame();
-        alert(`¡SETUP LISTO!\nHas recibido ${bonus} monedas por tus ramos aprobados.`);
+        save(); launchGame();
+        alert(`¡SETUP LISTO!\nHas recibido ${bonus} monedas.`);
     }
 
     function launchGame() {
@@ -253,22 +230,17 @@
         updateUI();
     }
 
-    function save() {
-        localStorage.setItem(KEY, JSON.stringify(player));
-        updateUI();
-    }
+    function save() { localStorage.setItem(KEY, JSON.stringify(player)); updateUI(); }
 
     function updateUI() {
         document.getElementById('coin-count').innerText = player.coins;
-        renderMap();
-        renderActive();
+        renderMap(); renderActive();
     }
 
     // --- MAPA ---
     function renderMap() {
         const c = document.getElementById('map-container'); c.innerHTML = '';
         const sems = {}; curriculum.forEach(x=>{if(!sems[x.s])sems[x.s]=[];sems[x.s].push(x)});
-        
         for(let i=1; i<=10; i++) {
             if(!sems[i]) continue;
             const b = document.createElement('div'); b.className='semester-block';
@@ -278,10 +250,8 @@
                 const a = player.current.includes(sub.id);
                 const miss = sub.req.filter(r=>!player.passed.includes(r));
                 const lock = miss.length>0 && !p && !a;
-                
                 let cl='', ic='🔹';
                 if(p){cl='passed';ic='🏆'} else if(a){cl='active';ic='⚔️'} else if(lock){cl='locked';ic='🔒'} else ic='✨';
-                
                 b.innerHTML += `<div class="pixel-box quest-card ${cl}" onclick="clickCard('${sub.id}', ${lock}, '${miss}')">
                     <div style="font-size:1.5rem;">${ic}</div>
                     <div><div style="font-weight:bold;">${sub.n}</div><div style="font-size:0.8rem;color:#888;">${sub.id}</div></div>
@@ -291,7 +261,7 @@
         }
     }
 
-    // --- INTERACCIÓN ASIGNATURAS ---
+    // --- GESTIÓN NOTAS (FIXED) ---
     let currId = null;
     function clickCard(id, lock, miss) {
         currId = id;
@@ -310,7 +280,7 @@
             <div style="border:1px dashed #555; margin-top:10px; padding:10px;">
                 <div style="color:var(--blue);font-size:0.8rem;">CHEAT CODE</div>
                 <input id="cheat" class="rpg-input" placeholder="PASSWORD">
-                <button class="btn btn-green" style="padding:5px; margin-top:5px;" onclick="tryCheat('${id}')">EJECUTAR</button>
+                <button class="btn btn-green" onclick="tryCheat('${id}')">EJECUTAR</button>
             </div>`;
         } else {
             box.innerHTML = `<button class="btn btn-green" onclick="enroll('${id}')">ACEPTAR MISIÓN</button>`;
@@ -319,51 +289,78 @@
 
     function closeModal() { document.getElementById('modal').style.display='none'; updateUI(); }
     function enroll(id) { if(!player.current.includes(id)) player.current.push(id); save(); closeModal(); }
-    
     function tryCheat(id) {
         const v = document.getElementById('cheat').value.toUpperCase();
-        if(v==='OPENSESAME' || v==='HESOYAM') { enroll(id); alert("CHEAT ACTIVADO"); } 
-        else alert("DENEGADO");
+        if(v==='OPENSESAME' || v==='HESOYAM') { enroll(id); alert("CHEAT ACTIVADO"); } else alert("DENEGADO");
     }
 
-    // --- NOTAS ---
+    // --- FORMULARIO DE NOTAS ARREGLADO ---
     function renderGrades(box, id) {
         const gs = player.grades[id]||[];
-        let sum=0; gs.forEach(g=>sum+=parseFloat(g.g)*(parseFloat(g.w)/100));
+        let sum=0; 
+        let totalW=0;
+        gs.forEach(g=>{
+            sum+=parseFloat(g.g)*(parseFloat(g.w)/100);
+            totalW+=parseFloat(g.w);
+        });
         const avg = sum.toFixed(2);
         
-        box.innerHTML = `
-            <div style="background:#000; border:2px solid white; height:20px; margin-bottom:10px; position:relative;">
+        let html = `
+            <div style="background:#000; border:2px solid white; height:24px; margin-bottom:5px; position:relative;">
                 <div style="background:${avg>=3.95? 'var(--green)':'var(--red)'}; width:${Math.min(100,(avg/7)*100)}%; height:100%;"></div>
-                <div style="position:absolute; top:0; width:100%; font-size:0.8rem;">HP: ${avg}</div>
+                <div style="position:absolute; top:0; width:100%; font-size:1rem;">PROMEDIO: ${avg}</div>
             </div>
-            <div id="glist" style="margin-bottom:10px;"></div>
-            <div style="display:flex; gap:5px;">
-                <input id="gn" placeholder="Item" style="width:40%; background:#000; color:white; border:1px solid white;">
-                <input id="gg" type="number" placeholder="Nota" style="width:25%; background:#000; color:white; border:1px solid white;">
-                <input id="gw" type="number" placeholder="%" style="width:25%; background:#000; color:white; border:1px solid white;">
-                <button onclick="addG('${id}')" style="background:var(--blue); border:none; padding:5px;">+</button>
+            <div style="font-size:0.8rem; color:${totalW>100?'red':'gray'}; margin-bottom:10px;">PESO ACUMULADO: ${totalW}%</div>
+            
+            <div id="glist"></div>
+
+            <div class="grade-form">
+                <input id="input-desc" class="rpg-input" placeholder="Nombre (Ej: Solemne 1)">
+                <div style="display:flex; gap:5px;">
+                    <input id="input-grade" type="number" class="rpg-input" placeholder="Nota (1.0 - 7.0)">
+                    <input id="input-weight" type="number" class="rpg-input" placeholder="% (Ej: 30)">
+                </div>
+                <button class="btn btn-green" onclick="addGradeLogic('${id}')">AGREGAR NOTA</button>
             </div>
-            <button class="btn btn-red" onclick="drop('${id}')">ABANDONAR</button>
+
+            <button class="btn btn-red" style="margin-top:20px;" onclick="drop('${id}')">ABANDONAR MATERIA</button>
         `;
-        const l = box.querySelector('#glist');
+        box.innerHTML = html;
+
+        const listDiv = box.querySelector('#glist');
         gs.forEach((g,i)=> {
-            l.innerHTML += `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #444;">
-                <span>${g.n}</span><span>${g.g} (${g.w}%)</span> <span style="color:red" onclick="delG('${id}',${i})">x</span>
-            </div>`;
+            listDiv.innerHTML += `
+                <div class="grade-list-item">
+                    <span>${g.n}</span>
+                    <span>${g.g} (${g.w}%)</span> 
+                    <button onclick="delG('${id}',${i})" style="background:red; color:white; border:none; padding:5px 10px; font-family:inherit;">X</button>
+                </div>`;
         });
     }
-    function addG(id) {
-        const n=document.getElementById('gn').value, g=document.getElementById('gg').value, w=document.getElementById('gw').value;
-        if(n&&g&&w) { 
-            if(!player.grades[id]) player.grades[id]=[]; 
-            player.grades[id].push({n,g,w}); 
-            save(); renderGrades(document.getElementById('m-content'), id); 
+
+    // NUEVA LÓGICA DE AGREGAR NOTA
+    function addGradeLogic(id) {
+        const n = document.getElementById('input-desc').value;
+        const g = document.getElementById('input-grade').value;
+        const w = document.getElementById('input-weight').value;
+
+        if(!n || !g || !w) {
+            alert("¡Faltan datos! Debes poner Nombre, Nota y Porcentaje.");
+            return;
         }
+        
+        if(!player.grades[id]) player.grades[id] = [];
+        player.grades[id].push({n, g, w});
+        save();
+        
+        // Recargar modal
+        renderGrades(document.getElementById('m-content'), id);
     }
+
     function delG(id,i) { player.grades[id].splice(i,1); save(); renderGrades(document.getElementById('m-content'), id); }
     function drop(id) { if(confirm("¿Borrar?")) { player.current=player.current.filter(x=>x!==id); delete player.grades[id]; save(); closeModal(); } }
 
+    // --- TIENDA & FIN SEMESTRE ---
     function renderActive() {
         const d = document.getElementById('active-list'); d.innerHTML='';
         if(player.current.length===0) return d.innerHTML='<p style="text-align:center; color:gray;">SIN MISIONES</p>';
@@ -379,84 +376,54 @@
         });
     }
 
-    // --- ECONOMÍA & TIENDA ---
     function finishSemester() {
         if(!confirm("¿Cerrar Semestre (>=3.95)?")) return;
         const pass = [];
-        let earnedCoins = 0;
-
+        let earned = 0;
         player.current.forEach(id => {
             const gs = player.grades[id]||[];
             let sum=0; gs.forEach(g=>sum+=parseFloat(g.g)*(parseFloat(g.w)/100));
-            
             if(sum >= 3.95) {
                 pass.push(id);
-                // Fórmula de Monedas: Nota * 100 (Ej: 4.0 = 400, 7.0 = 700)
-                earnedCoins += Math.floor(sum * 100);
+                earned += Math.floor(sum * 100);
             }
         });
-
-        player.passed = [...player.passed, ...pass];
-        player.current = [];
-        player.coins += earnedCoins;
-        
+        player.passed = [...player.passed, ...pass]; player.current = []; player.coins += earned;
         save();
-        alert(`SEMESTRE TERMINADO\nAsignaturas aprobadas: ${pass.length}\nGanancias: ${earnedCoins} Monedas`);
-        tab('view-shop'); // Llevar a la tienda para gastar
+        alert(`SEMESTRE CERRADO\nAprobadas: ${pass.length}\nGanaste: ${earned} Monedas`);
+        tab('view-shop');
     }
 
     function renderShop(filter) {
         const grid = document.getElementById('shop-grid'); grid.innerHTML = '';
         shopItems.forEach(item => {
             const owned = player.inventory.includes(item.id);
-            
             if(filter === 'owned' && !owned) return;
-            
-            // Render
             grid.innerHTML += `
                 <div class="pixel-box item-card">
                     <div class="item-icon ${owned?'item-owned':''}">${item.i}</div>
                     <div style="font-weight:bold; font-size:0.9rem;">${item.n}</div>
-                    ${owned 
-                        ? '<div style="color:var(--green); font-size:0.8rem;">EN POSESIÓN</div>' 
-                        : `<div class="item-price">${item.p} 🪙</div><button class="buy-btn" onclick="buy(${item.id}, ${item.p})">COMPRAR</button>`
-                    }
-                </div>
-            `;
+                    ${owned ? '<div style="color:var(--green); font-size:0.8rem;">EN POSESIÓN</div>' : `<div class="item-price">${item.p} 🪙</div><button class="buy-btn" onclick="buy(${item.id}, ${item.p})">COMPRAR</button>`}
+                </div>`;
         });
     }
-
     function buy(id, price) {
         if(player.coins >= price) {
-            player.coins -= price;
-            player.inventory.push(id);
-            showToast("COMPRADO: ITEM #" + id);
-            save();
-            renderShop('all'); // Refrescar
-        } else {
-            alert("DINERO INSUFICIENTE");
-        }
+            player.coins -= price; player.inventory.push(id);
+            showToast("COMPRADO: ITEM #" + id); save(); renderShop('all');
+        } else { alert("DINERO INSUFICIENTE"); }
     }
-
-    function showToast(msg) {
-        const t = document.getElementById('toast');
-        document.getElementById('toast-msg').innerText = msg;
-        t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000);
-    }
-
+    function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toast-msg').innerText = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); }
+    
     function tab(v, b) {
         document.getElementById('view-map').style.display='none';
         document.getElementById('view-active').style.display='none';
         document.getElementById('view-shop').style.display='none';
-        
         document.getElementById(v).style.display='block';
-        
         document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
         if(b) b.classList.add('active');
-
         if(v === 'view-shop') renderShop('all');
     }
-
     function hardReset() { if(confirm("¿Borrar Todo?")) { localStorage.removeItem(KEY); location.reload(); } }
 </script>
 </body>
